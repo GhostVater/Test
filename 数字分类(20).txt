@@ -1,0 +1,74 @@
+using System;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            var A = Console.ReadLine().Split().Select(x => int.Parse(x)).ToArray();
+            A = Remove(A, 0);
+            var A1 = A.Where(x => x % 5 == 0 && x % 2 == 0).ToArray();
+            string a1 = AddColl(A1);
+            var A2 = A.Where(x => x % 5 == 1).ToArray();
+            string a2 = AddCollX(A2);
+            var A3 = A.Where(x => x % 5 == 2).ToArray();
+            string a3 = A3.Length > 0 ? a3 = A3.Length.ToString() : "N";
+            var A4 = A.Where(x => x % 5 == 3).ToArray();
+            string a4 = A4.Length > 0 ? a4 = (float.Parse(AddColl(A4)) / A4.Length).ToString("0.0") : "N";
+            var A5 = A.Where(x => x % 5 == 4).ToArray();
+            string a5 = MaxNum(A5);
+            Console.WriteLine(a1 + " " + a2 + " " + a3 + " " + a4 + " " + a5);
+            return 0;
+        }
+        static string AddColl(int[] a)
+        {
+            if (a.Length <= 0) return "N";
+            int sum = 0;
+            foreach (var value in a)
+            {
+                sum += value;
+            }
+            return sum.ToString();
+        }
+        static string AddCollX(int[] a)
+        {
+            if (a.Length <= 0) return "N";
+            int sum = 0;
+            int x = 1;
+            foreach (var value in a)
+            {
+                sum += x * value;
+                x = -x;
+            }
+            return sum.ToString();
+        }
+        static string MaxNum(int[] a)
+        {
+            if (a.Length <= 0) return "N";
+            int max = 0;
+            foreach (var x in a)
+            {
+                if (max < x)
+                {
+                    max = x;
+                }
+            }
+            return max.ToString();
+        }
+        static int[] Remove(int[] a, int index)
+        {
+            if (index < 0 || index >= a.Length - 1) return a;
+            int[] n = new int[a.Length - 1];
+            for (int i = 0; i < a.Length - 1; i++)
+            {
+                if (i < index)
+                    n[i] = a[i];
+                else
+                    n[i] = a[i + 1];
+            }
+            return n;
+        }
+    }
+}

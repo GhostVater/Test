@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            Dictionary<string, string> dateDict = new Dictionary<string, string>()
+            {
+                {"A","MON"},
+                {"B","TUE"},
+                {"C","WED"},
+                {"D","THU"},
+                {"E","FRI"},
+                {"F","SAT"},
+                {"G","SUN"}
+            };
+            Dictionary<string, string> timeDict = new Dictionary<string, string>()
+            {
+                { "0","00"},
+                { "1","01"},
+                { "2","02"},
+                { "3","03"},
+                { "4","04"},
+                { "5","05"},
+                { "6","06"},
+                { "7","07"},
+                { "8","08"},
+                { "9","09"},
+                { "A","10"},
+                { "B","11"},
+                { "C","12"},
+                { "D","13"},
+                { "E","14"},
+                { "F","15"},
+                { "G","16"},
+                { "H","17"},
+                { "I","18"},
+                { "J","19"},
+                { "K","20"},
+                { "L","21"},
+                { "M","22"},
+                { "N","23"}
+            };
+            List<string> A = new List<string>();
+            for (int i = 0; i < 4; i++)
+            {
+                A.Add(Console.ReadLine());
+            }
+            string A1 = A[0];
+            string A2 = A[1];
+            string A3 = A[2];
+            string A4 = A[3];
+            string T = "";
+            int h = A1.Length > A2.Length ? A2.Length : A1.Length;
+            for (int i = 0; i < h; i++)
+            {
+                if (A1[i] == A2[i] && T.Length == 0 && ((A1[i] >= 'a' && A1[i] <= 'z') || (A1[i] >= 'A' && A1[i] <= 'Z')))
+                {
+                    T += A1[i];
+                }
+                else if (A1[i] == A2[i] && T.Length == 1 && ((A1[i] >= 'a' && A1[i] <= 'z') || (A1[i] >= 'A' && A1[i] <= 'Z') || (A1[i] >= '0' && A1[i] <= '9')))
+                {
+                    T += A1[i];
+                    break;
+                }
+            }
+            string day = dateDict[T[0].ToString()];
+            string hour = timeDict[T[1].ToString()];
+            h = A3.Length > A4.Length ? A4.Length : A3.Length;
+            int m = 0;
+            for (int i = 0; i < h; i++)
+            {
+                if (A3[i] == A4[i] && ((A3[i] >= 'a' && A3[i] <= 'z') || (A3[i] >= 'A' && A3[i] <= 'Z')))
+                {
+                    m = i;
+                    break;
+                }
+            }
+            string miao = m.ToString().PadLeft(2, '0');
+            Console.WriteLine(day+" "+hour+":"+ miao);
+            return 0;
+        }
+
+    }
+}

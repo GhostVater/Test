@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+
+namespace Test0001
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int a = Convert.ToInt32(Console.ReadLine());
+            for (int i = 0; i < a; i++)
+            {
+                string str = Console.ReadLine();
+                string[] vs = str.Split(" ");
+                Console.WriteLine("Case #{0}: {1}", i + 1, AddNum(TryParse(vs[0]), TryParse(vs[1]), TryParse(vs[2])));
+            }
+        }
+        static string AddNum(long a, long b, long c)
+        {
+            if (a + b > c)
+            {
+                return "true";
+            }
+            return "false";
+        }
+        static long TryParse(string str)
+        {
+            if (!long.TryParse(str, out Int64 a))
+            {
+                a = 0;
+            }
+            return a;
+        }
+
+    }
+
+}

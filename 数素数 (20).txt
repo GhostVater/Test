@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+
+            var A = Console.ReadLine().Split().Select(x => int.Parse(x)).ToArray();
+            int m = A[0];
+            int n = A[1];
+            var M = CreatNum(n);
+            List<int> intList = new List<int>();
+
+            for (int i = m - 1; i < n; i++)
+            {
+                intList.Add(M[i]);
+            }
+
+            for (int i = 0; i < intList.Count; i++)
+            {
+                if ((i + 1) % 10 == 0) Console.WriteLine(intList[i]);
+                else if (i != intList.Count - 1) Console.Write(intList[i] + " ");
+                else Console.Write(intList[i]);
+            }
+            return 0;
+        }
+
+        static int[] CreatNum(int max)
+        {
+            int i = 2;
+            List<int> intList = new List<int>
+            {
+                2
+            };
+            bool flag;
+            int n;
+            while (intList.Count < max)
+            {
+                flag = true;
+                i++;
+                n = ((int)(Math.Sqrt(i)) + 1) > 5 ? ((int)(Math.Sqrt(i)) + 1) : i;
+                for (int j = 2; j < n; j++)
+                {
+                    if (i % j == 0)
+                    {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag)
+                {
+                    intList.Add(i);
+                }
+            }
+            return intList.ToArray();
+        }
+    }
+}
