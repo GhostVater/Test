@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] input = Console.ReadLine().Split(" ");
+            string A = input[0];
+            string B = input[1];
+            MaxNum(A, B);
+            return 0;
+        }
+
+        static void MaxNum(string A, string B)
+        {
+            int b = int.Parse(B);
+            string r = "0";
+            bool flag = true;
+            for (int i = 0; i < A.Length; i++)
+            {
+                int q = int.Parse(r + A[i].ToString()) / b;
+                r = (int.Parse(r + A[i].ToString()) % b).ToString();
+
+                if(flag && q != 0)
+                {
+                    flag = false;
+                }
+                if (!flag)
+                {
+                    Console.Write(q);
+                }
+            }
+            Console.WriteLine(" "+r);
+        }
+    }
+}
