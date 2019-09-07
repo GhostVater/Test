@@ -1,0 +1,61 @@
+//输入两个整数 n 和 m，从数列1，2，3.......n 中随意取几个数,使其和等于 m ,要求将其中所有的可能组合列出来
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        private static readonly List<int> list = new List<int>();
+        private static readonly List<List<int>> intlist = new List<List<int>>();
+        static int Main(string[] args)
+        {
+            string[] input = Console.ReadLine().Split(" ");
+
+            int n = Convert.ToInt32(input[0]);
+            int m = Convert.ToInt32(input[1]);
+            Findsum(m, n);
+            intlist.Sort((x, y) => x[0].CompareTo(y[0]));
+            foreach (var li in intlist)
+            {
+                for (int i = 0; i < li.Count; i++)
+                {
+                    if (i == li.Count - 1)
+                    {
+                        Console.WriteLine(li[i]);
+                    }
+                    else
+                    {
+                        Console.Write(li[i] + " ");
+                    }
+                }
+                Console.WriteLine();
+            }
+            return 0;
+        }
+        static void Findsum(int m, int n)
+        {
+            if (n < 1 || m < 1) return; //停止迭代条件
+            if (m < n) n = m; //迭代的数不得大于和(m) 如果大于则从m开始
+
+            if (m == n)
+            {
+                List<int> vs = new List<int>();
+                for (int i = 0; i <list.Count; i++)
+                {
+                    vs.Add(list[i]);
+                }
+                vs.Add(m);
+                vs.Sort();
+                intlist.Add(vs);
+            }
+
+            list.Add(n);
+            Findsum(m - n, n - 1);
+            list.Clear();
+            Findsum(m, n - 1);
+        }
+    }
+}

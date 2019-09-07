@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] str = Console.ReadLine().Split(" ");
+
+            string A = str[0];
+            char Da = str[1][0];
+            string B = str[2];
+            char Db = str[3][0];
+
+            var a = A.Where(x => x == Da).ToArray();
+            var b = B.Where(x => x == Db).ToArray();
+
+            string a1 = new string(a);
+            string b1 = new string(b);
+
+            if (string.IsNullOrEmpty(a1))
+            {
+                a1 = "0";
+            }
+            if (string.IsNullOrEmpty(b1))
+            {
+                b1 = "0";
+            }
+
+            Console.WriteLine(Convert.ToInt32(a1) + Convert.ToInt32(b1));
+
+
+            return 0;
+        }
+    }
+}
