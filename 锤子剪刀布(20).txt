@@ -1,0 +1,128 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    public struct WinHand
+    {
+        public string name;
+        public int times;
+        public WinHand(string name, int times)
+        {
+            this.name = name;
+            this.times = times;
+        }
+    }
+
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            int n = int.Parse(Console.ReadLine());
+            Player player1 = new Player();
+            Player player2 = new Player();
+            for (int i = 0; i < n; i++)
+            {
+                string[] input = Console.ReadLine().Split(" ");
+                string p1 = input[0];
+                string p2 = input[1];
+                player1.AddWPD(p1, p2);
+                player2.AddWPD(p2, p1);
+               
+            }
+            player1.OutPutWPD();
+            player2.OutPutWPD();
+            Console.WriteLine(player1.ReturnWin() + " " + player2.ReturnWin());
+            return 0;
+        }
+    }
+
+    class Player
+    {
+        public int W = 0;//胜利次数
+        public int P = 0;//平局次数
+        public int D = 0;//失败次数
+
+        public int J = 0;//出剪刀胜利次数
+        public int C = 0;//出石头胜利次数
+        public int B = 0;//出布胜利次数
+
+        /// <summary>
+        /// 统计游戏胜利情况
+        /// </summary>
+        /// <param name="a">自己出的</param>
+        /// <param name="b">别人出的</param>
+        public void AddWPD(string a,string b)
+        {
+            if (a == "J")
+            {
+                if (b == "J")
+                {
+                    P++;
+                }
+                else if(b == "C")
+                {
+                    D++;
+                }
+                else
+                {
+                    W++;
+                    J++;
+
+                }
+            }
+            else if(a == "C")
+            {
+                if (b == "J")
+                {
+                    W++;
+                    C++;
+                }
+                else if (b == "C")
+                {
+                    P++;
+                }
+                else
+                {
+                    D++;
+                }
+            }
+            else
+            {
+                if (b == "J")
+                {
+                    D++;
+                }
+                else if (b == "C")
+                {
+                    W++;
+                    B++;
+                }
+                else
+                {
+                    P++;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 返回胜率最大的手势
+        /// </summary>
+        /// <returns></returns>
+        public string ReturnWin()
+        {
+            List<WinHand> winHands = new List<WinHand>() {new WinHand("J",J), new WinHand("C", C), new WinHand("B", B) };
+            winHands.Sort((x, y) => -x.times.CompareTo(y.times) * 2 + x.name.CompareTo(y.name));
+            return winHands[0].name;
+        }
+      
+        /// <summary>
+        /// 输出次数
+        /// </summary>
+        public void OutPutWPD()
+        {
+            Console.WriteLine(W + " " + P + " " + D);
+        }
+    }
+}

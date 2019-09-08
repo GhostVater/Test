@@ -1,0 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            HDNum(Console.ReadLine());
+            return 0;
+        }
+
+        static void HDNum(string str)
+        {
+            str = str.PadLeft(4, '0');
+            if (str[0] == str[1]&& str[0] == str[2]&& str[0] == str[3])//四个数字全相等
+            {
+                Console.WriteLine(str + " - " + str + " = 0000");
+                return;
+            }
+            if (str == "6174")//特殊情况特殊对待
+            {
+                Console.WriteLine("7641 - 1467 = 6174");
+                return;
+            }
+            string cha =  str;
+            while (cha!="6174")
+            {
+                int min = int.Parse(new string(cha.ToList().OrderBy(x => x).ToArray()));
+                int max = int.Parse(new string(cha.ToList().OrderByDescending(x => x).ToArray()));
+                cha = (max - min).ToString();
+                Console.WriteLine(max.ToString().PadLeft(4, '0') + " - " + min.ToString().PadLeft(4, '0') + " = " + cha.PadLeft(4,'0'));
+            }
+        }
+    }
+}

@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] input = Console.ReadLine().Split(' ');
+            string str = "";
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == "0")//表示该数没有
+                {
+                    continue;
+                }
+                for (int j = 0; j < int.Parse(input[i]); j++)
+                {
+                    str += i;
+                }
+            }
+            char[] cs = str.ToArray();
+            for (int i = 0; i < cs.Length; i++)
+            {
+                if (cs[i] == '0')
+                {
+                    if(i == cs.Length - 1)
+                    {
+                        Console.WriteLine(0);
+                        break;
+                    }
+                    continue;
+                }
+                else
+                {
+                    char t = cs[0];
+                    cs[0] = cs[i];
+                    cs[i] = t;
+                    break;
+                }
+            }
+            foreach (var item in cs)
+            {
+                Console.Write(item);
+            }
+            return 0;
+        }
+    }
+}

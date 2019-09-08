@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string str = Console.ReadLine();
+            for (int i = 0; i < 10; i++)
+            {
+                int a0 = str.Where(x => x == char.Parse(i.ToString())).ToList().Count;
+                Print(i, a0);
+            }
+            return 0;
+        }
+        static void Print(int index,int value)
+        {
+            if (value > 0)
+            {
+                Console.WriteLine(index + ":" + value);
+            }
+        }
+    }
+}

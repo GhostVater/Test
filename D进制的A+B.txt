@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string str = Console.ReadLine();
+            string[] str1 = str.Split(' ');
+            int sum = int.Parse(str1[0])+ int.Parse(str1[1]);
+            int hex = int.Parse(str1[2]);
+            Console.WriteLine(HexNum(sum, hex));
+            return 0;
+        }
+       
+        /// <summary>
+        /// hex进制的n转化为10进制
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="hex"></param>
+        /// <returns></returns>
+        static int AnyHex(string n,int hex)
+        {
+            double sum = 0;
+            for (int i = n.Length - 1; i >= 0; i--)
+            {
+                sum += int.Parse(n[i].ToString()) * Math.Pow(hex, (n.Length - 1 - i));
+            }
+            return Convert.ToInt32(sum);
+        }
+
+        /// <summary>
+        /// 10十进制转hex进制
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="hex"></param>
+        /// <returns></returns>
+        static string HexNum(int n,int hex)
+        {
+            string str = "";
+            while (n>0)
+            {
+                str = n % hex + str;
+                n /= hex;
+            }
+            return str;    
+        }
+    }
+}

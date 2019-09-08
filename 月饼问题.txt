@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] input = Console.ReadLine().Split(' ');
+            int kind = int.Parse(input[0]);//月饼种类
+            int demand = int.Parse(input[1]);//需求量
+
+            List<Mooncake> mooncakes = new List<Mooncake>();
+
+            string[] ku = Console.ReadLine().Split(' ');//所有售价
+            string[] sell = Console.ReadLine().Split(' ');//所有售价
+
+            for (int i = 0; i < kind; i++)
+            {
+                mooncakes.Add(new Mooncake(int.Parse(ku[i]),int.Parse(sell[i])));
+            }
+            mooncakes = mooncakes.Where(x => (x.Inventory != 0 && x.TotalSell != 0)).ToList();//测试出现BUG除去0后无法通过测试
+            mooncakes.Sort((x, y) => -((float)x.TotalSell / x.Inventory).CompareTo((float)y.TotalSell / y.Inventory));
+            double Profit = 0;//利润
+
+            foreach (Mooncake mooncake in mooncakes)
+            {
+                if(demand> mooncake.Inventory)
+                {
+                    Profit += mooncake.TotalSell;
+                    demand -= mooncake.Inventory;
+                }
+                else
+                {
+                    Profit += (demand * (float)mooncake.TotalSell/mooncake.Inventory);
+                    break;
+                }
+            }
+            Console.WriteLine(string.Format("{0:0.00}", Profit));
+            return 0;
+        }
+    }
+
+    class Mooncake
+    {
+        public int Inventory;//库存
+        public int TotalSell;//售价
+        public float Sell;//零售价
+        public Mooncake(int inventory,int totalSell)
+        {
+            this.Inventory = inventory;
+            this.TotalSell = totalSell;
+            if (inventory > 0 && totalSell > 0)
+            {
+                this.Sell = totalSell*1.0f / inventory;
+            }
+            else
+            {
+                this.Sell = 0;
+            }
+        }
+    }
+}
