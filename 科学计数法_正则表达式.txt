@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string input = Console.ReadLine();
+            var z = Regex.Match(input, "([+-])([1-9])[.]([0-9]+)E([+-])([0-9]+)");
+            string sign1 = input[0] == '-' ? "-" : "";//保存整个数的正负号
+            string num = z.Groups[2].Value+ z.Groups[3].Value;//保留数
+            string sign2 = z.Groups[4].Value;//保留指数正负号
+            int hex = int.Parse(z.Groups[5].Value);//保留指数
+            if (sign2 == "+")
+            {
+                int numL = num.Length;
+
+                if (numL- hex < 0)
+                {
+                    int m1 = hex - numL;
+                    num= num.PadRight((num.Length + m1+1), '0');
+                    Console.WriteLine(sign1 + num);
+                }
+                else
+                {
+                    num = num.Insert(hex + 1, ".");
+                    Console.WriteLine(sign1 + num);
+                }
+            }
+            else
+            {
+                num = num.PadLeft((num.Length + hex - 1), '0');
+                num = "0." + num;
+                Console.WriteLine(sign1 + num);
+            }
+            return 0;
+        }
+    }
+}

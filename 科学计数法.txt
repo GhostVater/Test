@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+ 
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string input = Console.ReadLine();
+            string sign1 = input[0] == '-' ? "-" : "";//保存整个数的正负号
+            char sign2 = '+';//保留指数正负号
+            string num = "";//保留数
+            string hex = "";//保留指数
+            bool flag = false;
+ 
+            for (int i = 1; i < input.Length; i++)
+            {
+                if (input[i] == '.') continue;
+                if (input[i] != 'E' && !flag)
+                {
+                    num += input[i];
+                }
+                else
+                {
+                    if(input[i] == 'E')
+                    {
+                        flag = true;
+                        sign2 = input[i + 1];
+                        i++;
+                        continue;
+                    }
+                    hex += input[i];
+                }
+            }
+            int m = int.Parse(hex);//指数
+            if (sign2 == '+')
+            {
+                int numL = num.Length;
+ 
+                if (numL- m < 0)
+                {
+                    int m1 = m - numL;
+                    num= num.PadRight((num.Length + m1+1), '0');
+                    Console.WriteLine(sign1 + num);
+                }
+                else
+                {
+                    num = num.Insert(m+1, ".");
+                    Console.WriteLine(sign1 + num);
+                }
+            }
+            else
+            {
+                num = num.PadLeft((num.Length + m-1), '0');
+                num = "0." + num;
+                Console.WriteLine(sign1 + num);
+            }
+            return 0;
+        }
+    }
+}
