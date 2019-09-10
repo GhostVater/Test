@@ -1,0 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] input1 = Console.ReadLine().Split(' ');
+            int C = (int)Math.Round(((int.Parse(input1[1]) - int.Parse(input1[0])) / 100.0f), MidpointRounding.AwayFromZero);
+            string hh = (C / 3600).ToString().PadLeft(2, '0');
+            string mm = ((C % 3600) / 60).ToString().PadLeft(2, '0');
+            string ss = (((C % 3600) % 60) % 60).ToString().PadLeft(2, '0');
+            Console.WriteLine(hh + ":" + mm + ":" + ss);
+            return 0;
+        }
+    }
+}

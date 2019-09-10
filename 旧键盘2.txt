@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string str1 = Console.ReadLine();
+            string str2 = Console.ReadLine();
+
+            char[] a1 = (str1.ToUpper()+ str1.ToLower()).ToCharArray();
+
+            if (!IsToUpper(str1))//ÊÇ·ñÓÐ»»µ²¼ü»»ÁË
+            {
+                str2 = Regex.Replace(str2, "[A-Z]", "");
+            }
+            str2 = String.Join("", str2.Split(a1));
+            if (str2.Length > 0)
+            {
+                Console.WriteLine(str2);
+            }
+            else
+            {
+                Console.WriteLine("_");
+            }
+
+            return 0;
+        }
+
+        static bool IsToUpper(string str)
+        {
+            for (int i = 0; i < str.Length; i++)
+            {
+                if(str[i] == '+')
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+}

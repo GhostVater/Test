@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            int count = int.Parse(Console.ReadLine());
+
+            List<People> peoples = new List<People>();
+            for (int i = 0; i < count; i++)
+            {
+                string[] data = Console.ReadLine().Split('/',' ');
+                string name = data[0];
+                int year = int.Parse(data[1]);
+                int month = int.Parse(data[2]);
+                int day = int.Parse(data[3]);
+                if (year > 2014 || year < 1814) continue;
+                if (year == 2014)
+                {
+                    if (month > 9) continue;
+
+                    if (month == 9)
+                    {
+                        if (day > 6) continue;
+                    }
+                }
+                else if (year == 1814)
+                {
+                    if (month < 9) continue;
+
+                    if (month == 9)
+                    {
+                        if (day < 6) continue;
+                    }
+                }
+                peoples.Add(new People(name, year, month, day));
+            }
+
+            peoples.Sort((x, y) => x.date.CompareTo(y.date));
+            Console.WriteLine(peoples.Count + " " + peoples[0].name + " " + peoples[peoples.Count - 1].name);
+            return 0;
+        }
+    }
+    class People
+    {
+        public string name;
+        public int year;
+        public int month;
+        public int day;
+        public string date;
+
+        public People(string name, int year, int month, int day)
+        {
+            this.name = name;
+            this.year = year;
+            this.month = month;
+            this.day = day;
+            this.date = year + month + day.ToString();
+        }
+    }
+
+
+}

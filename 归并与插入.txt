@@ -1,0 +1,108 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            int n = int.Parse(Console.ReadLine());
+            string input1 = Console.ReadLine();
+            string[] input2 = Console.ReadLine().Split(' ');
+
+            InsertionSort(input1.Split(' '), input2);
+            MergeSort(input1.Split(' '), input2);
+           
+            return 0;
+
+        }
+        static void InsertionSort(string[] ls, string[] cs)
+        {
+            int n = ls.Length;
+            bool isok = false;
+            for (int i = 0; i < n; ++i)
+            {
+                string si = ls[i];
+                int vi = int.Parse(si);
+
+                int j = i - 1;
+                for (; j >= 0; --j)
+                {
+                    if (vi >= int.Parse(ls[j]))
+                        break;
+                    ls[j + 1] = ls[j];
+                }
+
+                ls[j + 1] = si;
+                if (isok) { if (ls[i] != cs[i]) break; }
+                else { isok = LsCompare(ls, cs); }
+            }
+            if (isok)
+            {
+                Console.WriteLine("Insertion Sort");
+                Console.WriteLine(String.Join(" ", ls));
+            }
+        }
+        public static void MergeSort(string[] ls, string[] cs)
+        {
+            int n = ls.Length;
+            int t = 1;
+            bool isok = false;
+            while (t <= n)
+            {
+                int si = 0, ei = si + t;
+
+                bool change = false;
+                var tls = new string[t * 2];
+                while (si < n)
+                {
+                    int tsi = si, tei = ei, tci = 0;
+                    var se = Math.Min(tei, n);
+                    var ee = Math.Min(ei + t, n);
+
+                    while (tsi < se || tei < ee)
+                    {
+                        if (tei >= ee || (tsi < se && int.Parse(ls[tsi]) <= int.Parse(ls[tei])))
+                        {
+                            tls[tci] = ls[tsi]; ++tci; ++tsi;
+                        }
+                        else if (tsi >= se || (tei < ee && int.Parse(ls[tsi]) > int.Parse(ls[tei])))
+                        {
+                            tls[tci] = ls[tei]; ++tci; ++tei;
+                        }
+                    }
+
+                    for (int i = 0; i < tci; ++i)
+                    {
+                        if (ls[si + i] != tls[i])
+                        {
+                            change = true;
+                            ls[si + i] = tls[i];
+                        }
+                    }
+
+                    si += t * 2; ei += t * 2;
+                }
+
+                if (isok) { if (change) break; }
+                else isok = LsCompare(ls, cs);
+                t *= 2;
+            }
+            if (isok)
+            {
+                Console.WriteLine("Merge Sort");
+                Console.WriteLine(String.Join(" ",ls));
+            }
+        }
+        static bool LsCompare(string[] ls, string[] cs)
+        {
+            for (int i = 0; i < ls.Length; ++i)
+            {
+                if (ls[i] != cs[i]) return false;
+            }
+            return true;
+        }
+    }
+}

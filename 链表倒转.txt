@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        private static List<LNode> sortNodeList = new List<LNode>();//排序后的链表
+        private static List<LNode> conNodeList = new List<LNode>();//连接后的链表
+        private static Dictionary<string, LNode> nodeDict = new Dictionary<string, LNode>();//通过前置结点找到该结点
+
+        static int Main(string[] args)
+        {
+            string[] input1 = Console.ReadLine().Split(' ');
+            string addr = input1[0]; //第一个地址
+            int length  = int.Parse(input1[1]); //节点数
+            int count = int.Parse(input1[2]);//反转个数
+
+            for (int i = 0; i < length; i++)
+            {
+                string[] input2 = Console.ReadLine().Split(' ');
+                nodeDict.Add(input2[0], new LNode(input2[0], input2[1], input2[2]));
+            }
+
+            if (nodeDict.Count == 1)
+            {
+                LNode nowLNode = nodeDict[addr];
+                Console.WriteLine(nowLNode.Address + " " + nowLNode.Data + " " + nowLNode.NextAddress);
+                return 0;
+            }
+            
+            //从第一个链表开始连接链表
+            ConLNode(addr);
+            //倒转链表
+            DirLNode(count);
+            //重新连接链表
+            ConLNode();
+            foreach (var item in sortNodeList)
+            {
+                Console.WriteLine(item.Address + " " + item.Data + " " + item.NextAddress);
+            }
+            return 0;
+        }
+    
+        /// <summary>
+        /// 连接链表
+        /// </summary>
+        static void ConLNode(string addr)
+        {
+            for (int i = 0; i < nodeDict.Count; i++)
+            {
+                if (addr == "-1") return;//地址等于-1 连接终止到这里说明有无效结点所以直接跳出即可
+                LNode nowLNode = nodeDict[addr];//寻找当前节点所指向的下一个节点
+                conNodeList.Add(nowLNode);//添加当前结点
+                addr = nowLNode.NextAddress;  //指向下一个节点
+            }
+        }
+     
+        /// <summary>
+        /// 倒转链表
+        /// </summary>
+        /// <param name="count"></param>
+        static void DirLNode(int count)
+        {
+            if(count> conNodeList.Count)
+            {
+                sortNodeList = conNodeList;
+            }
+            if (conNodeList.Count < 2) return;
+            List<LNode> ln = new List<LNode>();
+            for (int i = 0; i < conNodeList.Count; i++)
+            {
+                if ((i + 1) % count == 0)
+                {
+                    ln.Insert(0, conNodeList[i]);
+                    sortNodeList = sortNodeList.Concat(ln).ToList();
+                    ln.Clear();
+                }
+                else
+                {
+                    ln.Insert(0, conNodeList[i]);
+                    
+                    continue;
+                }
+                if (count > (conNodeList.Count - 1 - i))//不够倒转的长度就不倒转
+                {
+                    //因为i已经被插入了 所以这里直接搜索i+1以后的
+                    for (int j = i+1; j < conNodeList.Count; j++)
+                    {
+                        ln.Add(conNodeList[j]);
+                    }
+                    sortNodeList = sortNodeList.Concat(ln).ToList();
+                    break;
+                }
+            }
+        }
+       
+        /// <summary>
+        /// 重新连接链表
+        /// </summary>
+        static void ConLNode()
+        {
+            if (sortNodeList.Count < 2) return;
+            sortNodeList[sortNodeList.Count - 1].NextAddress = "-1";
+            for (int i = sortNodeList.Count - 2; i >= 0; i--)
+            {
+                sortNodeList[i].NextAddress = sortNodeList[i + 1].Address;
+            }
+        }
+    }
+
+    class LNode
+    {
+        public string Address;//地址
+        public string Data;//数据
+        public string NextAddress;//指向的地址
+        public LNode(string address,string data,string dirAddress)
+        {
+            this.Address = address;
+            this.Data = data;
+            this.NextAddress = dirAddress;
+        }
+    }
+}
