@@ -1,0 +1,255 @@
+//杭州市提供公共自行车服务，为来自世界各地的游客提供便利。人们可以在任何车站租一辆自行车，然后将车返回城市的任何其他车站。
+//公共自行车管理中心（PBMC）持续监控所有车站的实时容量。如果一个电视台正好是半满的话，那么它就处于完美状态。如果车站已满或空，PBMC将收集或发送自行车以调整该车站的状况以完善。此外，路上的所有车站也将进行调整。
+//报告问题站时，PBMC将始终选择到达该站的最短路径。如果有多个最短路径，则将选择从PBMC发送的自行车数量最少的路径。
+
+//图1说明了一个例子。站点由顶点表示，道路对应于边缘。边缘上的数字是从另一个终端站到达一个终端站所花费的时间。在顶点S内写入的数字是当前存储在S处的自行车数量。鉴于每个站点的最大容量为10.为了解决S 3的问题，我们有2个不同的最短路径：
+//1。PBMC  - > S 1 - > S 3。在这种情况下，必须从PBMC发送4辆自行车，因为我们可以从S 1收集1辆自行车，然后将5辆自行车送到3号，这样两个车站都将处于完美状态。
+//2. PBMC  - > S 2 - > S 3。该路径需要与路径1相同的时间，但是只有3个自行车从PBMC发送，因此是将被选择的路径。
+
+//输入描述：
+//每个输入文件包含一个测试用例。对于每种情况，第一行包含4个数字：C max（<= 100），总是偶数，是每个站的最大容量; N（<= 500），站的总数; S p，问题站的索引（站点从1到N编号，PBMC由顶点0表示）; 和M，道路的数量。第二行包含N个非负数C i（i = 1，... N），其中每个C i分别是S i处的当前自行车数。然后是M行，每行包含3个数字：S i，S j和T ij，它们描述了在站点S之间移动所需的时间T ij我和S j。一行中的所有数字都用空格分隔。
+
+//输出描述：
+//对于每个测试用例，将结果打印在一行中。首先输出PBMC必须发送的自行车数量。然后在一个空格后，以下列格式输出路径：0-> S 1 - > ...-> S p。最后在另一个空间之后，输出在S p的条件调整到完美后我们必须收回到PBMC的自行车数量。
+//请注意，如果此类路径不是唯一的，则输出需要最少数量的自行车的路径，我们必须将其带回PBMC。法官的数据保证这样的路径是独一无二的。
+
+//输入例子：
+//10 3 3 5
+//6 7 0
+//0 1 1
+//0 2 1
+//0 3 3
+//1 3 1
+//2 3 1
+
+//输出例子：
+//3 0->2->3 0
+
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct CountLen
+    {
+        public int length; // 到达下一站所需的时间
+        public int count;  // 当前站所拥有的自行车总数
+
+        public CountLen(int length, int count)
+        {
+            this.length = length;
+            this.count = count;
+        }
+    }
+
+    class Program
+    {
+        public static Dictionary<int, PBMC> PBMCDict = new Dictionary<int, PBMC>();
+        public static List<Manager> stations = new List<Manager>();
+        public static Manager manager = new Manager();
+
+        public static int endIndex;
+        public static int maxCount;
+
+        static int Main(string[] args)
+        {
+            //开始索引默认为0
+            string[] str1 = Console.ReadLine().Split(' ');
+            maxCount = int.Parse(str1[0]);//最大自行车存放数
+            int stationCount = int.Parse(str1[1]);//站的数量
+            endIndex = int.Parse(str1[2]);//问题站
+            int roadCount = int.Parse(str1[3]);//路径数量
+            string[] str2 = Console.ReadLine().Split(' ');
+            PBMCDict.Add(0, new PBMC(0, 0));
+
+            for (int i = 0; i < stationCount; i++)
+            {
+                PBMCDict.Add(i + 1, new PBMC((i + 1), int.Parse(str2[i])));
+            }
+           
+            for (int i = 0; i < roadCount; i++)
+            {
+                string[] str3 = Console.ReadLine().Split(' ');
+                int id_1 = int.Parse(str3[0]); 
+                int id_2 = int.Parse(str3[1]); 
+                int length = int.Parse(str3[2]);
+                PBMCDict[id_1].AddPathDict(id_2, length);
+                PBMCDict[id_2].AddPathDict(id_1, length);
+            }
+            PBMCDict[0].LinkStation();
+            stations.Sort((x, y) => x.length.CompareTo(y.length) * 2 + x.send.CompareTo(y.send));//排序后获得最优解
+            stations[0].Show();
+
+            /* foreach (var item in stations)
+             {
+                 item.Show();
+             }*/
+
+            return 0;
+        }
+    }
+
+    class PBMC
+    {
+        public int id;
+        public int count;
+
+        /// <summary>
+        /// 下一站,时间
+        /// </summary>
+        public Dictionary<int, int> pathDict = new Dictionary<int, int>();
+
+        public PBMC(int id, int count)
+        {
+            this.id = id;
+            this.count = count;
+        }
+
+        public void AddPathDict(int id,int length)
+        {
+            if (pathDict.ContainsKey(id))
+            {
+                if (pathDict[id] > length)
+                {
+                    pathDict.Remove(id);
+                    pathDict.Add(id, length);
+                }
+            }
+            else
+            {
+                pathDict.Add(id, length);
+            }
+        }
+
+        /// <summary>
+        /// 路径长度与自行车总量
+        /// </summary>
+        /// <param name="length">路径距离</param>
+        /// <param name="count">总共所有站的自行车总数</param>
+        public void LinkStation()
+        {
+            //是否到达终点
+            if (this.id == Program.endIndex)
+            {
+                Program.manager.Add(this.id, this.count,0);
+                Program.manager.Arrang();
+                Program.stations.Add(Program.manager);
+                Program.manager = new Manager(Program.manager);
+                Program.manager.Delect(this.id);
+                return;
+            }
+
+            foreach (int id in pathDict.Keys)
+            {
+                //不能往回走形成死循环
+                if (Program.PBMCDict.ContainsKey(id)&& !Program.manager.IsExist(id))
+                {
+                    Program.manager.Add(this.id, this.count,pathDict[id]);
+                    Program.PBMCDict[id].LinkStation();
+                }
+            }
+
+            //遍历完后返回上一级,并删除当前节点
+            Program.manager = new Manager(Program.manager);
+            Program.manager.Delect(this.id);
+            return;
+        }
+    }
+    
+    class Manager
+    {
+        public Dictionary<int, CountLen> stations = new Dictionary<int, CountLen>();
+        public int length = 0;//总长度
+        public int count = 0;//总数量
+        public int send = 0;//发送数量
+        public int recy = 0;//回收数量
+
+        public Manager(Manager manager)
+        {
+            stations = new Dictionary<int, CountLen>(manager.stations);
+            length = 0;
+            count = 0;
+            send = 0;//需求数量
+        }
+        public Manager()
+        {
+
+        }
+
+        public bool IsExist(int id)
+        {
+            if (stations.ContainsKey(id))
+            {
+                return true;
+            }
+            return false;
+        }
+        public void Add(int id,int count, int length)
+        {
+            if (stations.ContainsKey(id))
+            {
+                Delect(id);
+                stations.Add(id, new CountLen(length, count));
+            }
+            else
+            {
+                stations.Add(id, new CountLen(length, count));
+            }
+        }
+        public void Delect(int id)
+        {
+            if (stations.ContainsKey(id))
+            {
+                stations.Remove(id);
+            }
+        }
+        public void Arrang()
+        {
+            int send = 0;//发送
+            int recy = 0;//回收
+            int perfect = Program.maxCount / 2;//完美值
+
+            foreach (var item in stations.Values)
+            {
+                this.length += item.length;
+                if (item.count > perfect)//需要回收
+                {
+                    recy += item.count - perfect;
+                }
+                else//需要派发
+                {
+                    send += perfect - item.count;
+                    if(send> recy)
+                    {
+                        send -= recy;
+                        recy = 0;
+                    }
+                    else
+                    {
+                        send = 0;
+                        recy -= send;
+                    }
+                }
+                this.count += item.count;
+            }
+
+            int a = ((stations.Count - 1) * perfect - this.count) + recy;
+
+            if (a < 0)
+            {
+                this.send = 0;
+                this.recy = recy - a;
+            }
+            else
+            {
+                this.send = a;
+                this.recy = recy;
+            }
+        }
+        public void Show()
+        {
+            Console.WriteLine(send + " " + String.Join("->", stations.Keys) + " " + recy);
+        }
+    }
+}

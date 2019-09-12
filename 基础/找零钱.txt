@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            string[] input = Console.ReadLine().Split(' ', '.');
+            Pay((int.Parse(input[3]) - int.Parse(input[0])), (int.Parse(input[4]) - int.Parse(input[1])), (int.Parse(input[5]) - int.Parse(input[2])));
+            return 0;
+        }
+
+        static void Pay(int g,int s,int k)
+        {
+            string str  = "";
+
+            if (g < 0)
+            {
+                g = -g;
+                s = -s;
+                k = -k;
+                str = "-";
+            }
+
+            if (k < 0)
+            {
+                k += 29;
+                s--;
+            }
+            if (s < 0)
+            {
+                s += 17;
+                g--;
+            }
+
+            Console.WriteLine(str+g + "."+s+"."+k);
+        }
+
+    }
+}

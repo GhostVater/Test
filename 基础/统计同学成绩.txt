@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+           
+            string[] input1 = Console.ReadLine().Split(' ');
+
+            int count = int.Parse(input1[0]);
+            for (int i = 1; i < input1.Length; i++)
+            {
+                if (i <= count)
+                {
+                    new People(input1[i]);
+                }
+                else if (i == count + 1)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (i != input1.Length-1)
+                    {
+                        Console.Write(People.GetScoreDict(input1[i]) + " ");
+                    }
+                    else
+                    {
+                        Console.WriteLine(People.GetScoreDict(input1[i]));
+                    }
+                }
+            }
+            return 0;
+        }
+    }
+
+    class People
+    {
+        public static Dictionary<string, int> scoreDict = new Dictionary<string, int>();
+        public string score;
+        public People(string score)
+        {
+            this.score = score;
+            AddScoreDict();
+        }
+
+        private void AddScoreDict()
+        {
+            if (scoreDict.ContainsKey(score))
+            {
+                scoreDict[score]++;
+            }
+            else
+            {
+                scoreDict.Add(score, 1);
+            }
+        }
+
+        public static int GetScoreDict(string score)
+        {
+            if (scoreDict.ContainsKey(score))
+            {
+                return scoreDict[score];
+            }
+            return 0;
+        }
+
+    }
+}
