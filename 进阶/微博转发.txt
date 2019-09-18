@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, People> peopleDict = new Dictionary<int, People>();
+        public static List<int> finds = new List<int>();
+        public static int L;
+        public static void Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);
+            L = int.Parse(str1[1]);
+            for (int i = 1; i <= N; i++)
+            {
+                peopleDict.Add(i, new People(i));
+            }
+            for (int i = 1; i <= N; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                int count = int.Parse(str2[0]);
+                for (int j = 1; j <= count; j++)
+                {
+                    peopleDict[i].AddOreders(int.Parse(str2[j]));
+                }
+            }
+            string[] str3 = Console.ReadLine().Split(' ');
+            int n = int.Parse(str3[0]);
+            for (int i = 1; i <= n; i++)
+            {
+                finds.Add(int.Parse(str3[i]));
+            }
+            for (int i = 0; i < finds.Count; i++)
+            {
+                List<int> vs = new List<int>();
+                peopleDict[finds[i]].Link(vs);
+                Console.WriteLine(vs.Count);
+            }
+        }
+    }
+
+    class People
+    {
+        public int id;
+        public int grade;
+        public List<int> oreders = new List<int>();//订阅
+        public List<int> fans = new List<int>();//粉丝
+
+        public People(int id)
+        {
+            this.id = id;
+        }
+
+        /// <summary>
+        /// 转发消息
+        /// </summary>
+        /// <param name="grade">转发级别</param>
+        /// <param name="ids"></param>
+        public void Link(List<int> ids)
+        {
+            int grade = 1;
+            Queue<People> queue = new Queue<People>();
+            queue.Enqueue(this);//当前元素入队
+            queue.Enqueue(null);//插入一个空值标记位来记录当前层
+            while (queue.Any())//如果队中有元素
+            {
+                if (grade > Program.L) return;
+                var item = queue.Dequeue();//移除并返回在 Queue 的开头的对象。
+                if (item == null)//如果是标记位
+                {
+                    if (!queue.Any()) break;//并且不是最后一位
+                    grade++;
+                    queue.Enqueue(null);//并且添加新的标志位
+                    continue;
+                }
+                foreach (int id in item.fans)//向粉丝发送消息
+                {
+                    if (!ids.Contains(id) && id != this.id)//我自己不能转发给自己
+                    {
+                        ids.Add(id);//添加至List集合
+                        queue.Enqueue(Program.peopleDict[id]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 添加订阅者
+        /// </summary>
+        /// <param name="id"></param>
+        public void AddOreders(int id)
+        {
+            if (!oreders.Contains(id))
+            {
+                oreders.Add(id);//id成为了我的关注着
+                Program.peopleDict[id].AddFans(this.id);//我变成了id的粉丝
+            }
+        }
+      
+        /// <summary>
+        /// 添加粉丝
+        /// </summary>
+        /// <param name="id"></param>
+        public void AddFans(int id)
+        {
+            if (!fans.Contains(id))
+            {
+                fans.Add(id);
+            }
+        }
+    }
+}

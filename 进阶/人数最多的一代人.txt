@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+
+
+    class Program
+    {
+
+        public static Dictionary<string, People> peopleDict = new Dictionary<string, People>();
+        public static string startId = "01";
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);//总人数
+            int M = int.Parse(str1[1]);//拥有孩子的人数
+
+            for (int i = 1; i <= N; i++)
+            {
+                string id = i.ToString().PadLeft(2, '0');
+                peopleDict.Add(id,new People(id));
+            }
+
+            for (int i = 0; i < M; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                string id = str2[0];
+                int count = int.Parse(str2[1]);
+                for (int j = 2; j < count+2; j++)
+                {
+                    string childId = str2[j];
+                    peopleDict[id].AddChilds(childId);
+                }
+            }
+            peopleDict[startId].Link(2);
+            //分组统计数量
+            var source = new List<People>(peopleDict.Values).GroupBy(x => x.grade).Select(x => new { count = x.Count(), key = x.Key }).ToArray();
+            //找出数量最大的一组
+            source = source.Where(x => x.count == source.Max(y => y.count)).ToArray();
+
+            Console.WriteLine(source[0].count + " " + source[0].key);
+
+            return 0;
+        }
+    }
+
+    class People
+    {
+        public string id;
+        public int grade = 1;
+        public List<string> childs = new List<string>();
+
+        public People(string id)
+        {
+            this.id = id;
+        }
+
+        public void AddChilds(string id)
+        {
+            if (!childs.Contains(id))
+            {
+                childs.Add(id);
+            }
+        }
+
+        public void Link(int grade)
+        {
+            //int nextGrade = grade + 1;
+            foreach (var id in childs)
+            {
+                Program.peopleDict[id].grade = grade;
+                Program.peopleDict[id].Link(grade + 1);
+            }
+        }
+    }
+}

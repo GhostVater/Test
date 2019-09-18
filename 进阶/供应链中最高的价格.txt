@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, Distributors> distributorsDict = new Dictionary<int, Distributors>();
+        public static List<Plan> plans = new List<Plan>();
+
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int count = int.Parse(str1[0]);//成员数量
+            Plan.basePrice = float.Parse(str1[1]);//价格
+            Plan.interestRate = float.Parse(str1[2]) / 100;//利率
+
+            string[] str2 = Console.ReadLine().Split(' ');
+
+            for (int i = -1; i < count; i++)//实例化对象
+            {
+                distributorsDict.Add(i, new Distributors(i));
+            }
+
+            for (int i = 0; i < count; i++)//添加对应关系
+            {
+                distributorsDict[int.Parse(str2[i])].AddNextDis(i);
+            }
+
+            distributorsDict[-1].Link(new Plan());
+
+            Console.WriteLine(plans[0].price.ToString("0.00")+" "+ plans.Count);
+            
+            return 0;
+        }
+    }
+
+    class Distributors
+    {
+        public int id;//经销商ID
+
+        public List<int> nextDis = new List<int>();//经销商的下家
+
+        public void AddNextDis(int id)//添加下家
+        {
+            nextDis.Add(id);
+        }
+
+        public void Link(Plan prevPlan)
+        {
+            Plan plan = new Plan(prevPlan);
+            //说明到了终点
+            if (nextDis.Count == 0)
+            {
+                plan.StartPlan();
+                if (Program.plans.Count == 0)
+                {
+                    Program.plans.Add(plan);
+                }
+                else
+                {
+                    if (plan.length == Program.plans[0].length)
+                    {
+                        Program.plans.Add(plan);
+                    }
+                    else if (plan.length > Program.plans[0].length)
+                    {
+                        Program.plans.Clear();
+                        Program.plans.Add(plan);
+                    }
+                }
+                return;
+            }
+
+            foreach (var id in nextDis)
+            {
+                if (Program.distributorsDict.ContainsKey(id) && !plan.IsPlanList(id))
+                {
+                    Plan plan2 = new Plan(prevPlan);
+                    plan2.AddPlanList(id);
+                    Program.distributorsDict[id].Link(plan2);
+                }
+            } 
+        }
+
+        public Distributors(int id)
+        {
+            this.id = id;
+        }
+
+    }
+
+    class Plan
+    {
+        public int length;
+        public double price;
+
+        /// <summary>
+        /// 存放结点的数组
+        /// </summary>
+        public List<int> planList = new List<int>();
+
+        public static float basePrice;
+        public static float interestRate;
+
+        public Plan()
+        {
+        }
+
+        public Plan(Plan prevPlan)
+        {
+            this.planList = new List<int>(prevPlan.planList);
+        }
+
+        /// <summary>
+        /// 添加结点
+        /// </summary>
+        /// <param name="id">结点id</param>
+        public void AddPlanList(int id)
+        {
+            planList.Add(id);  
+        }
+
+        /// <summary>
+        /// 是否存在于集合中
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool IsPlanList(int id)
+        {
+            if (planList.Contains(id))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void StartPlan()
+        {
+            length = planList.Count;
+            price = basePrice;
+            for (int i = 0; i < length - 1; i++)
+            {
+                price += price * interestRate;
+            }
+        }
+    }
+}

@@ -1,0 +1,199 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct Time
+    {
+        public int h;
+        public int m;
+        public int s;
+        public int t;
+
+        public Time(string time)
+        {
+            string[] times = time.Split(':');
+            this.h = int.Parse(times[0]);
+            this.m = int.Parse(times[1]);
+            this.s = int.Parse(times[2]);
+            this.t = h * 3600 + m * 60 + s;
+        }
+
+        public static string Normalization(int s)
+        {
+            string hh = (s / 3600).ToString().PadLeft(2, '0');
+            string mm = ((s % 3600) / 60).ToString().PadLeft(2, '0');
+            string ss = (((s % 3600) % 60) % 60).ToString().PadLeft(2, '0');
+            return hh + ":" + mm + ":" + ss;
+
+        }
+    }
+
+    public struct TimePeriod
+    {
+        public Time startTime;
+        public Time endTime;
+        public TimePeriod(Time startTime, Time endTime)
+        {
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+    }
+
+
+    class Program
+    {
+        public static Dictionary<string, Car> carDict = new Dictionary<string, Car>();
+      
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);//记录数
+            int K = int.Parse(str1[1]);//查询时间数
+
+            for (int i = 0; i < N; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                string id = str2[0];
+                string time = str2[1];
+                string carState = str2[2];
+                if (!carDict.ContainsKey(id))
+                {
+                    carDict.Add(id, new Car(id, time, carState));
+                }
+                else
+                {
+                    carDict[id].AddTime(time, carState);
+                }
+            }
+
+            string[] times = new string[K];
+            for (int i = 0; i < K; i++)
+            {
+                times[i] = Console.ReadLine();
+            }
+            foreach (var car in carDict.Values)
+            {
+                car.SortTime();
+            }
+
+            List<Car> cars = new List<Car>(carDict.Values);
+
+            for (int i = 0; i < K; i++)
+            {
+                string time = times[i];
+                int count = 0;
+                foreach (var car in cars)
+                {
+                    car.TimeState(time);
+                    if (car.carState == "in")
+                    {
+                        count++;
+                    }
+                }
+                Console.WriteLine(count);
+            }
+
+            cars = cars.Where(x => x.stayTime == cars.Max(y => y.stayTime)).ToList();
+            cars.Sort();
+
+            foreach (var car in cars)
+            {
+                Console.Write(car.id + " ");
+            }
+            Console.Write(cars[0].stayTime);
+            return 0;
+        }
+    }
+
+    class Car
+    {
+        public string id;
+        public List<Time> inTimes= new List<Time>();
+        public List<Time> outTimes = new List<Time>();
+        public List<TimePeriod> timePeriods = new List<TimePeriod>();
+        public string stayTime;
+        public string carState;
+
+        public Car(string id, string time, string carState)
+        {
+            this.id = id;
+            if (carState == "in")
+            {
+                inTimes.Add(new Time(time));
+            }
+            else
+            {
+                outTimes.Add(new Time(time));
+            }
+        }
+        public void AddTime(string time, string carState)
+        {
+            if (carState == "in")
+            {
+                inTimes.Add(new Time(time));
+            }
+            else
+            {
+                outTimes.Add(new Time(time));
+            }
+        }
+
+        public void SortTime()
+        {
+            inTimes.Sort((x, y) => x.t.CompareTo(y.t));
+            outTimes.Sort((x, y) => x.t.CompareTo(y.t));
+            //剔除非法数据
+            List<Time> a = new List<Time>(outTimes);
+
+            int ti = inTimes[0].t;
+            foreach (var item in outTimes)
+            {
+                if (item.t < ti)
+                {
+                    a.Remove(item);
+                    continue;
+                }
+                break;
+            }
+            outTimes = new List<Time>(a);
+
+
+            int len = inTimes.Count > outTimes.Count ? outTimes.Count : inTimes.Count;
+
+            for (int i = 0; i < len; i++)
+            {
+                //识别数据是否为有效数据
+                if (timePeriods.Count > 0)
+                {
+                    if (inTimes[i].t < timePeriods[timePeriods.Count - 1].endTime.t) continue;//进入时间不得晚于上一次出去的时间
+                }
+                timePeriods.Add(new TimePeriod(inTimes[i], outTimes[i]));
+            }
+            int s = 0;
+            foreach (var timePeriod in timePeriods)
+            {
+                s += timePeriod.endTime.t - timePeriod.startTime.t;
+            }
+            this.stayTime = Time.Normalization(s);//将s转化为时间
+
+        }
+
+        public void TimeState(string time)
+        {
+            Time t = new Time(time);
+
+            foreach (var timePeriod in timePeriods)
+            {
+                if(t.t>= timePeriod.startTime.t && t.t < timePeriod.endTime.t)
+                {
+                    carState = "in";
+                    return;
+                }
+            }
+            carState = "out";
+        }
+    }
+}

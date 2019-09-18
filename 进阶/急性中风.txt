@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    struct Vector3
+    {
+        public int x;
+        public int y;
+        public int z;
+        public Vector3(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
+    class Program
+    {
+        public static int[,,] MXN;
+        public static Dictionary<Vector3, bool> flagDict = new Dictionary<Vector3, bool>();
+        public static int Y;
+        public static int X;
+        public static int Z;
+        public static int T;
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            Y = int.Parse(str1[0]);//排
+            X = int.Parse(str1[1]);//列
+            Z = int.Parse(str1[2]);//数量
+            T = int.Parse(str1[3]);//连接数量限制
+
+            MXN = new int[X, Y, Z];
+            for (int z = 0; z < Z; z++)
+            {
+                for (int y = 0; y < Y; y++)
+                {
+                    string[] str2 = Console.ReadLine().Split(' ');
+                    for (int x = 0; x < X; x++)
+                    {
+                        MXN[x, y, z] = int.Parse(str2[x]);
+                    }
+                }
+            }
+
+            int count = 0;
+            for (int z = 0; z < Z; z++)
+            {
+                for (int x = 0; x < X; x++)
+                {
+                    for (int y = 0; y < Y; y++)
+                    {
+                        if (MXN[x, y, z] == 0|| flagDict.ContainsKey(new Vector3(x, y, z))) continue;
+                        List<Vector3> vector3s = new List<Vector3>();
+                        MatchList(vector3s, x, y, z);
+                        if (vector3s.Count >= T)
+                        {
+                            count += vector3s.Count;//加上自身
+                        }
+                    }
+                }
+            }
+            Console.WriteLine(count);
+            return 0;
+        }
+
+        // 0<=x<X  0<=y<Y  0<=z<Z
+
+        static void MatchList(List<Vector3> vector3,int x, int y, int z)
+        {
+            //前
+            if (z - 1 >= 0)
+            {
+                if (MXN[x, y, z - 1] == 1 && !flagDict.ContainsKey(new Vector3(x, y, z - 1)))
+                {
+                    vector3.Add(new Vector3(x, y, z - 1));
+                    flagDict.Add(new Vector3(x, y, z - 1), true);
+                    MatchList(vector3, x, y, z - 1);
+                }
+            }
+            //后
+            if (z + 1 < Z)
+            {
+                if (MXN[x, y, z + 1] == 1 && !flagDict.ContainsKey(new Vector3(x, y, z + 1)))
+                {
+                    vector3.Add(new Vector3(x, y, z + 1));
+                    flagDict.Add(new Vector3(x, y, z + 1),true);
+                    MatchList(vector3, x, y, z + 1);
+                }
+            }
+            //上
+            if (y - 1 >= 0)
+            {
+                if (MXN[x, y - 1, z] == 1 && !flagDict.ContainsKey(new Vector3(x, y - 1, z)))
+                {
+                    vector3.Add(new Vector3(x, y - 1, z));
+                    flagDict.Add(new Vector3(x, y - 1, z), true);
+                    MatchList(vector3, x, y - 1, z);
+                }
+            }
+            //下
+            if (y + 1 < Y)
+            {
+                if (MXN[x, y + 1, z] == 1 && !flagDict.ContainsKey(new Vector3(x, y + 1, z)))
+                {
+                    vector3.Add(new Vector3(x, y + 1, z));
+                    flagDict.Add(new Vector3(x, y + 1, z),true);
+                    MatchList(vector3, x, y + 1, z);
+                }
+            }
+            //左
+            if (x - 1 >= 0)
+            {
+                if (MXN[x - 1, y, z] == 1 && !flagDict.ContainsKey(new Vector3(x - 1, y, z)))
+                {
+                    vector3.Add(new Vector3(x - 1, y, z));
+                    flagDict.Add(new Vector3(x - 1, y, z),true);
+                    MatchList(vector3, x - 1, y, z);
+                }
+            }
+            //右
+            if (x + 1 < X)
+            {
+                if (MXN[x + 1, y, z] == 1 && !flagDict.ContainsKey(new Vector3(x + 1, y, z)))
+                {
+                    vector3.Add(new Vector3(x + 1, y, z));
+                    flagDict.Add(new Vector3(x + 1, y, z),true);
+                    MatchList(vector3, x + 1, y, z);
+                }
+            }
+        }
+    }
+}

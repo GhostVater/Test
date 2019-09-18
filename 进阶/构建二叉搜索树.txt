@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, Tree> treeDict = new Dictionary<int, Tree>();
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+            for (int i = 0; i < N; i++)
+            {
+                string[] str1 = Console.ReadLine().Split(' ');
+                int left = int.Parse(str1[0]);
+                int right = int.Parse(str1[1]);
+                treeDict.Add(i, new Tree(i, left, right));
+            }
+            List<string> str2 = Console.ReadLine().Split(' ').ToList();
+            str2.Sort();
+            Tree.treeDict = treeDict;
+            treeDict[0].Link();
+            for (int i = 0; i < Tree.inOrderList.Count; i++)
+            {
+                treeDict[Tree.inOrderList[i]].value = int.Parse(str2[i]);
+            }
+            treeDict[0].LevelLink();
+            Console.WriteLine(String.Join(" ", Tree.hierlList.Select(x => treeDict[x].value)));
+        }
+    }
+
+    class Tree
+    {
+        /// <summary>
+        /// 存放所有的结点
+        /// </summary>
+        public static Dictionary<int, Tree> treeDict = new Dictionary<int, Tree>();
+        /// <summary>
+        /// 中序遍历后的结点顺序
+        /// </summary>
+        public static List<int> inOrderList = new List<int>();
+        /// <summary>
+        /// 层次遍历后的结点顺序
+        /// </summary>
+        public static List<int> hierlList = new List<int>();
+
+        public int id; //结点位置
+        public int left;//左孩子的结点位置
+        public int right;//有孩子的结点位置
+        public int value;//值
+        public Tree(int id, int left, int right)
+        {
+            this.id = id;
+            this.left = left;
+            this.right = right;
+        }
+
+        /// <summary>
+        /// 中序遍历
+        /// </summary>
+        public void Link()
+        {
+            //中序遍历
+            if (left != -1)
+            {
+                treeDict[left].Link();
+            }
+            inOrderList.Add(id);
+            if (right!= -1)
+            {
+                treeDict[right].Link();
+            }
+        }
+
+        /// <summary>
+        /// 层次遍历
+        /// </summary>
+        public void LevelLink()
+        {
+            //层次遍历
+            Queue<Tree> queue = new Queue<Tree>();
+            queue.Enqueue(this);//当前元素入队
+            while (queue.Any())//遍历队中所有元素
+            {
+                var item = queue.Dequeue();//移除并返回在 Queue 的开头的对象。
+                hierlList.Add(item.id);//添加至List集合
+                //左右结点入队
+                if (item.left != -1)
+                {
+                    queue.Enqueue(treeDict[item.left]);
+                }
+                if (item.right != -1)
+                {
+                    queue.Enqueue(treeDict[item.right]);
+                }
+            }
+        }
+    }
+}

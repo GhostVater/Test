@@ -1,0 +1,55 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            long number = long.Parse(Console.ReadLine());
+            int min = 2;
+            int max = (int)Math.Sqrt(number) + 1;
+            List<int> intList = new List<int>();
+            List<int> nowIntList = new List<int>();
+            for (int i = min; i <=max; i++)
+            {
+
+                if (number % i != 0) continue;
+                int s = i;
+                nowIntList.Add(i);
+                for (int j = i+1; j <= max; j++)
+                {
+                    s *= j;
+                    if (number % s == 0)
+                    {
+                        nowIntList.Add(j);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (nowIntList.Count > intList.Count)
+                {
+                    intList = new List<int>(nowIntList);
+                }
+                nowIntList.Clear();
+            }
+
+            if (intList.Count > 0)
+            {
+                Console.WriteLine(intList.Count);
+                Console.WriteLine(String.Join("*", intList));
+            }
+            else
+            {
+                Console.WriteLine("1");
+                Console.WriteLine(number);
+            }
+            return 0;
+        }
+    }
+}

@@ -1,0 +1,242 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct HapplyCost
+    {
+        public int happinessValue;
+        public int cost;
+
+        public HapplyCost(int happinessValue, int cost)
+        {
+            this.happinessValue = happinessValue;
+            this.cost = cost;
+        }
+    }
+
+
+    class Program
+    {
+        public static List<Plan> plans = new List<Plan>();
+
+        /// <summary>
+        /// 通过城市名称来获得对应的城市
+        /// </summary>
+        public static Dictionary<string, City> cityDict = new Dictionary<string, City>();
+
+        /// <summary>
+        /// 起始城市
+        /// </summary>
+        public static string startCity;
+
+        /// <summary>
+        /// 目标城市
+        /// </summary>
+        public static string endCity;
+
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int cityCount = int.Parse(str1[0]);//城市数量
+            int roadCount = int.Parse(str1[1]);//道路数量
+            startCity = str1[2];//起始城市
+            endCity = "ROM";//终点城市
+
+            cityDict.Add(startCity, new City(startCity, 0));
+
+            for (int i = 0; i < cityCount - 1; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                cityDict.Add(str2[0], new City(str2[0], int.Parse(str2[1])));
+            }
+
+            for (int i = 0; i < roadCount; i++)
+            {
+                string[] str3 = Console.ReadLine().Split(' ');
+                string cityName1 = str3[0];
+                string cityName2 = str3[1];
+                int cost = int.Parse(str3[2]);
+                cityDict[cityName1].AddCityCostDict(cityName2, cost);
+                cityDict[cityName2].AddCityCostDict(cityName1, cost);
+            }
+            cityDict[startCity].LinkCity(new Plan());
+            plans.Sort((x, y) => x.totalCost.CompareTo(y.totalCost) * 3 - x.totalHap.CompareTo(y.totalHap) * 2 - x.averageHap.CompareTo(y.averageHap));
+            plans[0].Show();
+            return 0;
+        }
+    }
+
+    class City
+    {
+        /// <summary>
+        ///城市名
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// 幸福值
+        /// </summary>
+        public int happinessValue;
+
+        /// <summary>
+        /// 可以到达的城市以及消耗的费用
+        /// </summary>
+        public Dictionary<string, int> cityCostDict = new Dictionary<string, int>();
+
+        /// <summary>
+        /// 添加可以到达的城市以及费用
+        /// </summary>
+        /// <param name="name">可以到达的城市</param>
+        /// <param name="cost">费用</param>
+        public void AddCityCostDict(string name, int cost)
+        {
+            if (cityCostDict.ContainsKey(name))//如果字典中存在该Key值则先移除再添加
+            {
+                cityCostDict.Remove(name);
+                cityCostDict.Add(name, cost);
+            }
+            else
+            {
+                cityCostDict.Add(name, cost);
+            }
+        }
+
+        /// <summary>
+        /// 深度优先连接所有城市
+        /// </summary>
+        public void LinkCity(Plan prevPlan)
+        {
+            Plan plan = new Plan(prevPlan);
+
+            if (this.name == Program.endCity)//如果到达目标城市
+            {
+                plan.AddPlanDict(this.name, this.happinessValue, 0);//添加目标城市
+                plan.StartPlan();//开始安排行程计划
+                if (Program.plans.Count == 0)
+                {
+                    Program.plans.Add(plan);//添加计划至List表单
+                }
+                else
+                {
+                    if (plan.totalCost == Program.plans[0].totalCost)
+                    {
+                        Program.plans.Add(plan);//添加计划至List表单
+                    }
+                    else if (plan.totalCost < Program.plans[0].totalCost)
+                    {
+                        Program.plans.Clear();
+                        Program.plans.Add(plan);//添加计划至List表单
+                    }
+                }
+                return;
+            }
+            if (Program.plans.Count != 0)
+            {
+                plan.StartPlan();
+                if (plan.totalCost > Program.plans[0].totalCost) return;
+            }
+
+            foreach (var key in cityCostDict.Keys)
+            {
+                //如果该城市存在并且 没有放到预选计划之中,则继续添加计划(遍历)
+                if (Program.cityDict.ContainsKey(key) && !plan.IsOnPlanDict(key))
+                {
+                    Plan plan2 = new Plan(prevPlan);
+                    plan2.AddPlanDict(this.name, this.happinessValue, cityCostDict[key]);
+                    Program.cityDict[key].LinkCity(plan2);
+                }
+            }
+            //遍历完毕后返回上一层
+            return;
+        }
+
+        public City(string name, int happinessValue)
+        {
+            this.name = name;
+            this.happinessValue = happinessValue;
+        }
+    }
+
+
+    class Plan
+    {
+        public Dictionary<string, HapplyCost> planDict = new Dictionary<string, HapplyCost>();
+        public int totalHap;//幸福总数
+        public int totalCost;//费用总数
+        public int averageHap;//平均幸福
+
+
+        /// <summary>
+        /// 有参构造初始化字典
+        /// </summary>
+        /// <param name="planDict"></param>
+        public Plan(Plan plan)
+        {
+            this.planDict = new Dictionary<string, HapplyCost>(plan.planDict);
+            this.totalHap = 0;
+            this.totalCost = 0;
+            this.averageHap = 0;
+        }
+
+        /// <summary>
+        /// 定义一个无参构造方便初始化
+        /// </summary>
+        public Plan()
+        {
+
+        }
+
+        public void AddPlanDict(string name, int happly, int cost)
+        {
+            if (planDict.ContainsKey(name))
+            {
+                planDict.Remove(name);
+                planDict.Add(name, new HapplyCost(happly, cost));
+            }
+            else
+            {
+                planDict.Add(name, new HapplyCost(happly, cost));
+            }
+
+        }
+
+        public bool IsOnPlanDict(string name)
+        {
+            if (planDict.ContainsKey(name))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void StartPlan()
+        {
+            totalHap = 0;
+            totalCost = 0;
+            averageHap = 0;
+
+            foreach (var plan in planDict.Values)
+            {
+                totalHap += plan.happinessValue;
+                totalCost += plan.cost;
+            }
+            if (planDict.Count > 1)
+            {
+                averageHap = totalHap / (planDict.Count - 1);
+            }
+            else
+            {
+                averageHap = 0;
+            }
+
+        }
+
+        public void Show()
+        {
+            Console.WriteLine(Program.plans.Count + " " + totalCost + " " + totalHap + " " + averageHap);
+            Console.WriteLine(String.Join("->", planDict.Keys));
+        }
+    }
+}

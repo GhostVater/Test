@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<string, Node> nodeDict = new Dictionary<string, Node>();
+        static int Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            string head = str1[0];
+            int N = int.Parse(str1[1]);
+            for (int i = 0; i < N; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                string address = str2[0];
+                int key = int.Parse(str2[1]);
+                string next = str2[2];
+                nodeDict.Add(address, new Node(address, key, next));
+            }
+            List<Node> nodes = new List<Node>(); //¡¨Ω”¡¥±Ì
+
+            for (string address = head ; address !="-1"; address = nodeDict[address].next)
+            {
+                nodes.Add(nodeDict[address]);
+            }
+
+            if (nodes.Count == 1)
+            {
+                Console.WriteLine(nodes[0].address + " " + nodes[0].key + " " + nodes[0].next);
+                return 0;
+            }
+
+            List<Node> nowNodes = new List<Node>();
+            Dictionary<int, Node> nowDict = new Dictionary<int, Node>();
+            List<Node> deleteNodes = new List<Node>(nodes);
+
+            nowNodes =  nodes.GroupBy(p => p.key).Select(g => g.First()).ToList();
+
+            foreach (var nowNode in nowNodes)
+            {
+                nowDict.Add(nowNode.key, nowNode);
+            }
+
+            for (int i = 0; i < nowNodes.Count; i++)
+            {
+                if(nowDict.ContainsKey( -nowNodes[i].key))
+                {
+                    nowNodes.Remove(nowDict[-nowNodes[i].key]);
+                }
+            }
+
+            if (nowNodes.Count > 0)
+            {
+                nodeDict[nowNodes[nowNodes.Count - 1].address].next = "-1";
+                if (nowNodes.Count > 1)
+                {
+                    for (int i = nowNodes.Count - 2; i >= 0; i--)
+                    {
+                        nodeDict[nowNodes[i].address].next = nodeDict[nowNodes[i + 1].address].address;
+                    }
+                }
+            }
+
+            foreach (var node in nodes)
+            {
+                if (nowNodes.Contains(node))
+                {
+                    deleteNodes.Remove(node);
+                }
+            }
+
+            deleteNodes = deleteNodes.GroupBy(p => p.key).Select(g => g.First()).ToList();
+
+            if (deleteNodes.Count > 0)
+            {
+                nodeDict[deleteNodes[deleteNodes.Count - 1].address].next = "-1";
+                if (deleteNodes.Count > 1)
+                {
+                    for (int i = deleteNodes.Count - 2; i >= 0; i--)
+                    {
+                        nodeDict[deleteNodes[i].address].next = nodeDict[deleteNodes[i + 1].address].address;
+                    }
+                }
+            }
+
+            foreach (var nowNode in nowNodes)
+            {
+                Console.WriteLine(nowNode.address + " " + nowNode.key + " " + nowNode.next);
+            }
+
+            foreach (var deleteNode in deleteNodes)
+            {
+                Console.WriteLine(deleteNode.address + " " + deleteNode.key + " " + deleteNode.next);
+            }
+            return 0;
+        }
+    }
+
+    class Node
+    {
+        public string address;
+        public int key;
+        public string next;
+
+        public Node(string address, int key, string next)
+        {
+            this.address = address;
+            this.key = key;
+            this.next = next;
+        }
+    }
+}

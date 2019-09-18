@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+
+            for (int i = 0; i < N; i++)
+            {
+                Kuchiguse.MatchString(Console.ReadLine());
+            }
+            Console.WriteLine(Kuchiguse.kuchiguse);
+        }
+    }
+
+    static class  Kuchiguse
+    {
+        public static string kuchiguse = null;
+        public static void MatchString(string str)
+        {
+            if (kuchiguse == null)
+            {
+                kuchiguse = str.Trim();
+            }
+            else
+            {
+                kuchiguse = MatchString(kuchiguse, str.Trim());
+            }
+        }
+        public static string MatchString(string str1,string str2)
+        {
+            int len = str1.Length > str2.Length ? str2.Length : str1.Length;
+            string str = "";
+            for (int i = 1; i <= len; i++)
+            {
+                if (str1[str1.Length - i] == str2[str2.Length - i])
+                {
+                    str = str1[str1.Length - i] + str;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return str == "" ? "nai" : str;
+        }
+    }
+}
