@@ -1,0 +1,33 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<int> node = new List<int>();
+        public static int N = 0;
+        public static int T = 0;
+        public static void Main(string[] args)
+        {
+            N = int.Parse(Console.ReadLine());
+            node = Console.ReadLine().Split(' ').Select(x => int.Parse(x)).ToList();
+            node.Sort();
+            int[] result = new int[N];
+            CreatTree(result,0);
+            Console.WriteLine(String.Join(" ", result));
+        }
+
+        static void CreatTree(int[] result, int root)
+        {
+            if (root >= N) return;
+            int left = root * 2 + 1;
+            int right = root * 2 + 2;
+            CreatTree(result,left);
+            result[root] = node[T++];
+            CreatTree(result,right);
+        }
+    }
+}

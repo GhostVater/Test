@@ -1,0 +1,185 @@
+//题目坑点,最小距离尽可能的大,平均距离尽可能的小
+//只需求出加油站到每个顶点的最小距离即可
+//如果每个居民房都有最小距离则为有效加油站
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<string, House> dict = new Dictionary<string, House>();//房屋和加油站
+        public static Dictionary<string, House> gasStationDict = new Dictionary<string, House>();//加油站
+        public static Dictionary<string, House> houseDict = new Dictionary<string, House>();//房屋
+        public static void Main(string[] args)
+        {
+            int minL = 0;
+            float minAverageL = 0;
+            string minId = "";
+            int[] a = new int[4];
+            a = Console.ReadLine().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int N = a[0]; //房屋总数
+            int M = a[1]; //加油站的候选位置总数
+            int K = a[2]; //连接房屋和加油站的道路数量
+            House.range = a[3]; //加油站的最大服务范围
+            for (int i = 1; i <= N; i++)//添加房屋
+            {
+                string id = i.ToString();
+                House house = new House(id);
+                dict.Add(id, house);
+                houseDict.Add(id, house);
+            }
+            for (int i = 1; i <= M; i++)//添加加油站
+            {
+                string id = "G" + i;
+                House house = new House(id);
+                dict.Add(id, house);
+                gasStationDict.Add(id, house);
+            }
+            for (int i = 0; i < K; i++)
+            {
+                string str = Console.ReadLine();
+                if (String.IsNullOrEmpty(str)) continue;
+                string[] ids = str.Split(' ');
+                string p1 = ids[0];
+                string p2 = ids[1];
+                int lenght = int.Parse(ids[2]);
+                if (p1 == p2 || lenght > House.range || !dict.ContainsKey(p1) || !dict.ContainsKey(p2)) continue;
+                dict[p1].AddRoadsDict(p2, lenght);
+                dict[p2].AddRoadsDict(p1, lenght);
+            }
+            House.dict = dict;
+            House.gasStationDict = gasStationDict;
+            House.houseDict = houseDict;
+
+            foreach (var house in gasStationDict.Values)
+            {
+                house.Link();
+                if (house.averageL != 0)
+                {
+                    if (minL == 0 || minL < house.minL || (minL == house.minL && minAverageL > house.averageL))
+                    {
+                        minL = house.minL;
+                        minAverageL = house.averageL;
+                        minId = house.id;
+                    }
+                }
+            }
+            if (minL != 0)
+            {
+                Console.WriteLine(minId);
+                Console.WriteLine(minL.ToString("f1") + " " + minAverageL.ToString("f1"));
+            }
+            else
+            {
+                Console.WriteLine("No Solution");
+            }
+        }
+    }
+
+    class House
+    {
+        public string id;
+        public int minL = 0;
+        public float averageL = 0;
+        public Dictionary<string, int> roadsDict = new Dictionary<string, int>();
+        public Dictionary<string, int> saveRoad = new Dictionary<string, int>();
+
+        public static Dictionary<string, House> dict = new Dictionary<string, House>();
+        public static Dictionary<string, House> gasStationDict = new Dictionary<string, House>();//加油站
+        public static Dictionary<string, House> houseDict = new Dictionary<string, House>();//房屋
+        public static int range;
+        public static int lenght = 0;//最短的路径
+        public House(string id)
+        {
+            this.id = id;
+        }
+
+        public void AddRoadsDict(string id, int length)
+        {
+            if (!roadsDict.ContainsKey(id))
+            {
+                roadsDict.Add(id, length);
+            }
+        }
+        public void Floyd(Dictionary<string, int> saveRoad, string endId, int len)
+        {
+            if (endId == this.id)
+            {
+                if (lenght == 0 || lenght > len)
+                {
+                    lenght = len;
+                    this.saveRoad = new Dictionary<string, int>(saveRoad);
+                }
+                return;
+            }
+
+            foreach (var id in roadsDict.Keys)
+            {
+                if (!saveRoad.ContainsKey(id) && (len + roadsDict[id]) <= range)
+                {
+                    Dictionary<string, int> newRoad = new Dictionary<string, int>(saveRoad)
+                    {
+                        { id, roadsDict[id]}
+                    };
+                    dict[id].Floyd(newRoad, endId, len + roadsDict[id]);
+                }
+            }
+        }
+        public void Link()
+        {
+            int count = 0;
+            int tL = 0;
+
+            foreach (var id in houseDict.Keys)//对每个居民房求出最小路径
+            {
+                lenght = 0;
+                if (saveRoad.Count != 0)
+                {
+                    int len = 0;
+                    bool isCon = false;
+                    foreach (var key in saveRoad.Keys)//遍历走过的路径
+                    {
+                        len += saveRoad[key];
+                        if (key == id)//如果有当前的目的地
+                        {
+                            count++;
+                            if (minL == 0 || minL > len)
+                            {
+                                minL = len;
+                            }
+                            tL += len;
+                            isCon = true;
+                            break;
+                        }
+                    }
+                    if (isCon)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        saveRoad.Clear();
+                    }
+                }
+                gasStationDict[this.id].Floyd(new Dictionary<string, int>(), id, 0);
+                if (lenght != 0)//有最短路径
+                {
+                    count++;
+                    if (minL == 0 || minL > lenght)
+                    {
+                        minL = lenght;
+                    }
+                    tL += lenght;
+                }
+            }
+
+            if (count == houseDict.Count)
+            {
+                averageL = tL / (count * 1.0f);
+            }
+        }
+    }
+}

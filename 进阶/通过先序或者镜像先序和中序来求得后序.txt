@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int[] a,b;
+        public static bool isBinary = true, isMirror = false;
+        public static void Main(string[] args)
+        {
+          int  n = int.Parse(Console.ReadLine());//长度
+            a = new int[n];
+            b = new int[n];
+            a = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            if(n>1 && a[1] >= a[0]) isMirror = true;//镜像先序
+            Func(0, n - 1, 0, n - 1);
+            if (isBinary)
+            {
+                Console.WriteLine("YES");
+                Console.WriteLine(String.Join(" ",b));
+            }
+            else
+            {
+                Console.WriteLine("NO");
+            }
+        }
+
+        public static void Func(int start,int end,int posStart,int posEnd)
+        {
+            if(start == end)
+            {
+                b[posStart] = a[start];
+                return;
+            }
+            if (start > end) return;
+            int mid = a[start];
+            int divPos = start + 1;
+            for (; divPos <= end; divPos++)
+            {
+                if ((a[divPos] < mid) == !isMirror) continue;//由于isMirror的状态不同 存在降序和升序情况这样写方便快捷
+                else break;
+            }
+            b[posEnd] = mid;
+            for (int i = divPos; i <= end; i++)
+            {
+                if ((a[i] < mid) == !isMirror)
+                {
+                    isBinary = false;
+                    return;
+                }
+            }
+            Func(start + 1, divPos - 1, posStart, posStart + (divPos - 2 - start));
+            Func(divPos, end, posEnd - 1 - (end - divPos), posEnd - 1);
+        }
+    }
+}

@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, List<int>> dict = new Dictionary<int, List<int>>();
+        public static string value;
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+
+            for (int i = 0; i < N; i++)
+            {
+                string[] str1 = Console.ReadLine().Split(' ');
+                int n = int.Parse(str1[0]);
+                List<int> s = new List<int>();
+                for (int j = 1; j <= n; j++)
+                {
+                    s.Add(int.Parse(str1[j]));
+                }
+                dict.Add(i + 1, s);
+            }
+            int M = int.Parse(Console.ReadLine());
+            for (int i = 0; i < M; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                Fun(int.Parse(str2[0]), int.Parse(str2[1]));
+            }
+            Console.WriteLine(value.TrimEnd('\n'));
+        }
+        static void Fun(int a0, int b0)
+        {
+            List<int> a = dict[a0];
+            List<int> b = dict[b0];
+            float m = a.Intersect(b).ToList().Count / (a.Union(b).ToList().Count * 1.0f);
+            value += (m * 100).ToString("f1") + "%\n";
+        }
+    }
+}

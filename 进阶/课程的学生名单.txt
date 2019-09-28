@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, K;
+        public static Dictionary<int, Course> courseDict = new Dictionary<int, Course>();
+        public static void Main(string[] args)
+        {
+            var A = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            N = A[0];
+            K = A[1];
+            //添加课程
+            for (int i = 1; i <= K; i++)
+            {
+                courseDict.Add(i, new Course(i));
+            }
+
+            for (int i = 1; i <= N; i++)
+            {
+                var B = Console.ReadLine().Trim().Split(' ');
+                string name = B[0];//学生姓名
+                int count = int.Parse(B[1]);//课程数量
+                for (int j = 2; j < count + 2; j++)
+                {
+                    int course = int.Parse(B[j]);//当前课程ID
+                    courseDict[course].students.Add(name);//给所有的课程添加学生
+                }
+            }
+            for (int i = 1; i <= K; i++)
+            {
+                courseDict[i].SortStu();
+                Console.WriteLine(i+" "+ courseDict[i].students.Count);
+                Console.WriteLine(String.Join("\n", courseDict[i].students));
+            }
+        }
+    }
+
+    class Course
+    {
+        public int id;
+        public HashSet<string> students = new HashSet<string>();
+        public Course(int id)
+        {
+            this.id = id;
+        }
+        public void SortStu()
+        {
+            students = students.OrderBy(x => x).ToHashSet();
+        }
+    }
+}

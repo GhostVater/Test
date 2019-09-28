@@ -1,0 +1,66 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static SortedList<string, int> wordDict = new SortedList<string, int>();
+        public static int maxCount = 0;
+        public static void Main(string[] args)
+        {
+            string str = Console.ReadLine().ToLower();
+            RemoveNonAlphabet(str.Trim());
+            var a = wordDict.OrderByDescending(x => x.Value).ThenBy(x => x.Key);
+            foreach (var key in a)
+            {
+                Console.WriteLine(key.Key + " " + key.Value);
+                break;
+            }
+        }
+        /// <summary>
+        /// 移除字符串中所有的非字母
+        /// </summary>
+        /// <returns></returns>
+        static void RemoveNonAlphabet(string str)
+        {
+            string word = "";
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (IsWord(str[i]))
+                {
+                    word += str[i];
+                }
+                else
+                {
+                    if (i != 0 && IsWord(str[i - 1]) && word != "")
+                    {
+                        if (wordDict.ContainsKey(word))
+                        {
+                            wordDict[word] ++;
+                            if (wordDict[word] > maxCount)
+                            {
+                                maxCount = wordDict[word];
+                            }
+                        }
+                        else
+                        {
+                            wordDict.Add(word, 1);
+                        }
+                    }
+                    word = "";
+                }
+            }
+        }
+        static bool IsWord(char c)
+        {
+            if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+}

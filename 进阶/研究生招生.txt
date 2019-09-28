@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, School> schoolDict = new Dictionary<int, School>();
+        public static Dictionary<int, Student> studentDict = new Dictionary<int, Student>();
+        public static void Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);//学生人数
+            int M = int.Parse(str1[1]);//学校个数
+            int K = int.Parse(str1[2]);//志愿个数
+            String[] str2 = Console.ReadLine().Split(' ');
+            for (int i = 0; i < M; i++)
+            {
+                schoolDict.Add(i, new School(i, int.Parse(str2[i])));
+            }
+
+            for (int i = 0; i < N; i++)
+            {
+                String[] str3 = Console.ReadLine().Split(' ');
+                int ge = int.Parse(str3[0]);
+                int gi = int.Parse(str3[1]);
+                Student stu = new Student(i, ge, gi);
+
+                for (int j = 2; j < K + 2; j++)//添加志愿
+                {
+                    stu.shcs.Add(int.Parse(str3[j]));
+                }
+
+                studentDict.Add(i, stu);
+            }
+
+            List<Student> students = new List<Student>(studentDict.Values);
+            students = students.OrderByDescending(x => x.ag).ThenByDescending(x => x.ge).ToList();
+
+            foreach (var stu in students)
+            {
+                stu.SelectSchool();
+            }
+
+            foreach (var school in schoolDict.Values)
+            {
+                school.stus.Sort();
+                Console.WriteLine(String.Join(" ", school.stus));
+            }
+
+        }
+    }
+
+    class Student
+    {
+        public int id;//学生编号
+        public int ge;//学生全国联考成绩
+        public int gi;//学生面试成绩
+        public float ag;//学生平均成绩
+        public List<int> shcs = new List<int>();//学生志愿
+
+        public Student(int id, int ge, int gi)
+        {
+            this.id = id;
+            this.ge = ge;
+            this.gi = gi;
+            ag = (ge + gi) / 2.0f;
+        }
+
+        public void SelectSchool()
+        {
+            foreach (var id in shcs)
+            {
+                //向学校发送入学请求
+                if (Program.schoolDict[id].Entrance(this.id)) break;
+            }
+        }
+    }
+
+    class School
+    {
+        public int id;//学校ID
+        public int count;//学校招生名额
+        public List<int> stus = new List<int>();//录取的学生
+
+        public School(int id, int count)
+        {
+            this.id = id;
+            this.count = count;
+        }
+
+        /// <summary>
+        /// 判断该学生是否可以入学
+        /// </summary>
+        /// <param name="id">学生id</param>
+        /// <returns></returns>
+        public bool Entrance(int id)
+        {
+            if(stus.Count< count)
+            {
+                stus.Add(id);
+                return true;
+            }
+            else
+            {
+                if (Program.studentDict[id].ge == Program.studentDict[stus[stus.Count - 1]].ge && Program.studentDict[id].gi == Program.studentDict[stus[stus.Count - 1]].gi)
+                {
+                    stus.Add(id);
+                    return true;
+                }
+                return false;
+            }
+        }
+    }
+}

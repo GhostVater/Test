@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, int> testDict = new Dictionary<int, int>();//存储考试对应的满分成绩
+        public static Dictionary<string, User> userDict = new Dictionary<string, User>();//存储所有用户
+        public static void Main(string[] args)
+        {
+            int[] a = new int[3];
+            a = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int N = a[0];//用户数
+            int K = a[1];//问题数
+            int M = a[2];//提交数
+            int[] b = new int[K];
+            b = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            //将满分与题目存入字典中
+            for (int i = 0; i < K; i++)
+            {
+                testDict.Add(i + 1, b[i]);
+            }
+            //生成用户数据
+            for (int i = 1; i <= N; i++)
+            {
+                string id = i.ToString().PadLeft(5, '0');
+                userDict.Add(id, new User(id, K));
+            }
+            //给用户添加成绩
+            for (int i = 0; i < M; i++)
+            {
+                string[] str = Console.ReadLine().Trim().Split(' ');
+                string id = str[0];
+                int index = int.Parse(str[1]);
+                int score = int.Parse(str[2]);
+                userDict[id].AddTest(index, score);
+            }
+            //向所有用户发送统计消息
+            foreach (var item in userDict.Values)
+            {
+                item.TotalScore();
+            }
+            List<User> userList = new List<User>(userDict.Values);
+            //筛选出满足条件的用户
+            userList = userList.Where(x => x.isPass).ToList();
+            //对用户按照指定条件进行排序
+            userList = userList.OrderByDescending(x => x.totalScore).ThenByDescending(x => x.count).ThenBy(x => x.id).ToList();
+            //第一名
+            userList[0].rank = 1;
+            //继续给后面的名次排名
+            if (userList.Count > 1)
+            {
+                for (int i = 1; i < userList.Count; i++)
+                {
+                    if (userList[i].totalScore == userList[i - 1].totalScore)
+                    {
+                        userList[i].rank = userList[i - 1].rank;
+                    }
+                    else
+                    {
+                        userList[i].rank = i + 1;
+                    }
+                }
+            }
+            //打印输出所有用户信息
+            foreach (var user in userList)
+            {
+                Console.WriteLine(user.rank + " " + user.id + " " + user.totalScore + " " + String.Join(" ", user.scores.Select(x => x != -2 ? x.ToString() : "-")));
+            }
+        }
+    }
+    class User
+    {
+        public string id;//用户id
+        public int totalScore;//用户总分
+        public int count;//提交正确总数
+        public int[] scores;//每一道题的分数
+        public int rank;
+        public bool isPass = false;
+        public User(string id, int len)
+        {
+            this.id = id;
+            scores = new int[len];
+            for (int i = 0; i < scores.Length; i++)
+            {
+                scores[i] = -2;
+            }
+        }
+        public void AddTest(int index, int score)
+        {
+            if (scores[index - 1] < score)
+            {
+                scores[index - 1] = score;
+            }
+        }
+        public void TotalScore()
+        {
+            for (int i = 0; i < scores.Length; i++)
+            {
+                if (scores[i] == Program.testDict[i + 1])//满分
+                {
+                    count++;
+                    totalScore += scores[i];
+                    isPass = true;
+                }
+                else if (scores[i] >= 0)
+                {
+                    totalScore += scores[i];
+                    isPass = true;
+                }
+                else if (scores[i] == -1)
+                {
+                    scores[i] = 0;
+                }
+            }
+        }
+    }
+}

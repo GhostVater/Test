@@ -1,0 +1,116 @@
+//题目坑点,最小距离尽可能的大,平均距离尽可能的小
+//只需求出加油站到每个顶点的最小距离即可
+//如果每个居民房都有最小距离则为有效加油站
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int[,] dist;
+        public static void Main(string[] args)
+        {
+            int[] a = new int[4];
+            a = Console.ReadLine().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int N = a[0]; //房屋总数
+            int M = a[1]; //加油站的候选位置总数
+            int K = a[2]; //连接房屋和加油站的道路数量
+            int D = a[3]; //加油站的最大服务范围
+            dist = new int[N + M + 1, N + M + 1];
+            //设置默认初始值,并且对角线为0, 自己和自己的距离为0;
+            for (int i = 1; i <= M+N; i++)
+            {
+                for (int j = 1; j <= M+N; j++)
+                {
+                    if (j != i)
+                    {
+                        dist[i, j] = int.MaxValue / 2;//注意这里 由于他要相加所以两个数不得超过int的最大值
+                    }
+                }
+            }
+            for (int i = 0; i < K; i++)
+            {
+                string str = Console.ReadLine();
+                if (String.IsNullOrEmpty(str)) continue;
+                string[] ids = str.Split(' ');
+                string p1 = ids[0];
+                string p2 = ids[1];
+                int lenght = int.Parse(ids[2]);
+                int n1 = Func(p1, N);
+                int n2 = Func(p2, N);
+                if (lenght < dist[n1, n2])
+                {
+                    dist[n1, n2] = lenght;
+                    dist[n2, n1] = lenght;
+                }
+            }
+            Floyd(dist, M + N);
+            int mL = 0; //最小距离
+            float aL = int.MaxValue; //平均距离
+            int index = 0;//加油站候选位置
+            for (int i = N + 1; i <= M + N; i++)
+            {
+                int sumL = 0;
+                int minL = int.MaxValue;
+                int count = 0;
+                for (int j = 1; j <= N; j++)
+                {
+                    if (dist[i, j] > D) break;
+                    count++;
+                    sumL += dist[i, j];
+                    minL = minL > dist[i, j] ? dist[i, j] : minL;
+                }
+                if (count == N)//全部都可以达到
+                {
+                    float avL = sumL / (N * 1.0f);
+                    if (mL == 0 || mL < minL || (mL == minL && aL > avL))
+                    {
+                        mL = minL;
+                        aL = avL;
+                        index = i;
+                    }
+                }
+            }
+            if (index != 0)
+            {
+                Console.WriteLine("G" + (index - N));
+                Console.WriteLine(mL.ToString("f1") + " " + aL.ToString("f1"));
+            }
+            else
+            {
+                Console.WriteLine("No Solution");
+            }
+        }
+        public static void Floyd(int[,] dist,int lenght)
+        {
+            for (int k = 1; k <= lenght; k++)
+            {
+                for (int i = 1; i <= lenght; i++)
+                {
+                    for (int j = 1; j <= lenght; j++)
+                    {
+                        if (dist[i, j] > (dist[i, k] + dist[k, j]))
+                        {
+                            dist[i, j] = dist[i, k] + dist[k, j];
+                        }
+                    }
+                }
+            }
+        }
+        public static int Func(string str,int n)
+        {
+            if (str[0] == 'G')
+            {
+                str = str.TrimStart('G');
+                return int.Parse(str) + n;
+            }
+            else
+            {
+                return int.Parse(str);
+            }
+        }
+    }
+}

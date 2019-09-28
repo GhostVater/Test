@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct IntTotal
+    {
+        public int value;
+        public int count;
+        public int total;
+
+        public IntTotal(int value, int count, int total)
+        {
+            this.value = value;
+            this.count = count;
+            this.total = total;
+        }
+    }
+
+    class Program
+    {
+        public static int N, M;
+        public static List<IntTotal> list = new List<IntTotal>()
+        {
+            new IntTotal(0,0,0),
+            new IntTotal(1,1,1)
+        };
+        public static void Main(string[] args)
+        {
+            N = int.Parse(Console.ReadLine());
+            FullPermutation(1);
+            string str = N.ToString();
+            int count = 0;
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == '1') count++;
+            }
+            Console.WriteLine(list[list.Count - 1].total + count);
+            Console.WriteLine(String.Join("\n", list.Select(x => x.value + " " + x.count + " " + x.total)));
+        }
+        public static void FullPermutation(int index)
+        {
+            if (list[list.Count - 1].value > N) return;
+            List<IntTotal> listNext = new List<IntTotal>(list);
+            int baseValue = (int)Math.Pow(10, index);
+            int baseCount = list[list.Count - 1].count;
+            for (int i = 0; i < listNext.Count; i++)
+            {
+                int value = baseValue + listNext[i].value;
+                if (value > N) return;
+                int count = baseCount + listNext[i].count + 1;
+                int total = listNext[i].total + count;
+                list.Add(new IntTotal(value, count, total));
+            }
+            FullPermutation(index + 1);
+        }
+    }
+}

@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] str = Console.ReadLine().Split(' ');
+            int n = int.Parse(str[0]);
+            string str1 = str[1];
+            string str2 = str[2];
+            Func(str1, str2, n);
+        }
+
+        static void Func(string str1,string str2,int n)
+        {
+            int k1 = 0;
+            Scientific(ref str1, ref k1, n);
+            int k2 = 0;
+            Scientific(ref str2, ref k2,n);
+
+            if (str1 == str2)
+            {
+                Console.WriteLine("YES "+str1+"*10^"+k1);
+            }
+            else
+            {
+                Console.WriteLine("NO " + str1 + "*10^" + k1 + " " + str2 + "*10^" + k2);
+            }
+        }
+
+        static void Scientific(ref string str,ref int k,int n)
+        {
+            int index = str.IndexOf('.');
+            if(index > 0)
+            {
+                k = index - 1;
+                str = str.Replace(".", "");
+                int i = 0;
+                for (; i < str.Length; i++)
+                {
+                    if (str[i] != '0')
+                    {
+                        break;
+                    }
+                }
+                str = str.TrimStart('0');
+                if (str != "")//0特殊情况
+                {
+                    k -= (i - 1);
+                }
+                else
+                {
+                    k -= 0;
+                }
+            }
+            else
+            {
+                str = str.TrimStart('0');
+
+                if (str != "0")//0特殊情况
+                {
+                    k = str.Length;
+                }
+                else
+                {
+                    k = 0;
+                }
+            }
+
+            if (str.Length > n)
+            {
+                str = str.Remove(n);//舍弃后面所有的数
+            }
+            else if (str.Length < n)
+            {
+                str = str.PadRight(n, '0');//位数不够补0
+            }
+            str = "0." + str;
+        }
+    }
+}

@@ -1,0 +1,30 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<int> uniques = new List<int>();
+        public static void Main(string[] args)
+        {
+            string[] str = Console.ReadLine().Trim().Split(' ');
+            int N = int.Parse(str[0]);
+            for (int i = 1; i <= N; i++)
+            {
+                uniques.Add(int.Parse(str[i]));
+            }
+            var sour = uniques.GroupBy(x => x).Select(x => new { count = x.Count(), key = x.Key }).Where(x => x.count == 1).ToArray();
+            if (sour.Length > 0)
+            {
+                Console.WriteLine(sour[0].key);
+            }
+            else
+            {
+                Console.WriteLine("None");
+            }
+        }
+    }
+}

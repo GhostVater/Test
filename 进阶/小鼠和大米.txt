@@ -1,0 +1,83 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, Player> playerDict = new Dictionary<int, Player>();
+        public static int Z;
+        public static void Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);//玩家人数
+            Z = int.Parse(str1[1]);//每组人数
+            string[] str2 = Console.ReadLine().Split(' ');
+            for (int i = 0; i < N; i++)
+            {
+                playerDict.Add(i, new Player(i, int.Parse(str2[i])));
+            }
+            string[] str3 = Console.ReadLine().Split(' ');
+            List<int> players = str3.Select(x => int.Parse(x)).ToList();
+            Match(players);//开始比赛
+            players.Sort((x, y) => -playerDict[x].grade.CompareTo(playerDict[y].grade));//按等级排序
+            playerDict[players[0]].ranking = 1;//第一名
+            if (players.Count > 1)
+            {
+                for (int i = 1; i < players.Count; i++)
+                {
+                    if (playerDict[players[i - 1]].grade == playerDict[players[i]].grade)//与上一名一个水平的
+                    {
+                        playerDict[players[i]].ranking = playerDict[players[i - 1]].ranking;//名次一样
+                    }
+                    else
+                    {
+                        playerDict[players[i]].ranking = i + 1;//当前人数的名次
+                    }
+                }
+            }
+            //输出
+            Console.WriteLine(String.Join(" ", playerDict.Values.Select(x=>x.ranking)));
+        }
+
+        /// <summary>
+        /// 开始比赛
+        /// </summary>
+        /// <param name="ps"></param>
+        static void Match(List<int> ps)
+        {
+            if (ps.Count == 1) return;//如果胜者组只有一个人,则比赛结束
+            List<int> a = new List<int>();//比赛组
+            List<int> b = new List<int>();//胜者组
+            for (int i = 0; i < ps.Count; i++)
+            {
+                a.Add(ps[i]);
+                if ((i + 1) % Z == 0|| i == ps.Count - 1)//如果按Z个一组分组 或者不够一组时
+                {
+                    a.Sort((x, y) => playerDict[x].score.CompareTo(playerDict[y].score));//比赛组按分数排序
+                    int id = a[a.Count - 1];//获得最高分
+                    playerDict[id].grade++;//让他的等级提高1级
+                    b.Add(id);//加入胜者组
+                    a.Clear();//清空比赛组
+                }
+            }
+            Match(b);//胜者组继续比
+        }
+    }
+
+    class Player
+    {
+        public int id;
+        public int score;
+        public int grade;//当前等级
+        public int ranking;//名次
+
+        public Player(int id, int score)
+        {
+            this.id = id;
+            this.score = score;
+        }
+    }
+}

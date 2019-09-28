@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int[] arr;
+        public static int N = 0;
+        public static int P = 0;
+        public static int index = 0;
+        public static int[] flag = new int[10010];
+        public static bool isOk = false;
+        public static void Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            N = int.Parse(str1[0]);
+            P = int.Parse(str1[1]);
+            arr = Console.ReadLine().Split(' ').Select(x => int.Parse(x)).Where(x => x <= P).ToArray();
+            Array.Sort(arr);
+            NumGroup(arr, 0, arr.Length, P);
+            if (!isOk) Console.WriteLine("No Solution");
+        }
+        public static void NumGroup(int[] arr, int start, int length, int sum)
+        {
+            if (isOk) return;
+            if (sum == 0)//刚好减到0
+            {
+                for (int i = 0; i < index; i++)
+                {
+                    if(i!= index - 1)
+                    {
+                        Console.Write(flag[i] + " ");
+                    }
+                    else
+                    {
+                        Console.Write(flag[i]);
+                    }
+                }
+                Console.WriteLine();
+                isOk = true;
+            }
+            else
+            {
+                for (int i = start; i < length; i++)
+                {
+                    if (isOk) return;
+                    if (sum - arr[i] >= 0)
+                    {
+                        flag[index++] = arr[i];
+                        NumGroup(arr, i + 1, length - 1, sum - arr[i]);
+                    }
+                }
+            }
+            index--;//回溯一次
+        }
+    }
+}

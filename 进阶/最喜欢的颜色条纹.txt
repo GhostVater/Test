@@ -1,0 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+            var a = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList();
+            int M = a[0];
+            a[0] = 0;
+            int[] A = a.ToArray();
+            var b = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList();
+            int L = b[0];
+            b[0] = 0;
+            int[] B = b.ToArray();
+
+            int[,] C = new int[M + 1, L + 1];
+            for (int i = 1; i <=M; i++)
+            {
+                for (int j = 1; j <= L; j++)
+                {
+                    C[i, j] = Math.Max(C[i - 1, j - 1], C[i, j - 1]);
+                    if (B[j] == A[i])
+                    {
+                        C[i, j]++;
+                    }
+                    C[i, j] = Math.Max(C[i, j], C[i - 1, j]);
+                }
+            }
+            Console.WriteLine(C[M, L]);
+        }
+    }
+}

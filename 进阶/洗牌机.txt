@@ -1,0 +1,57 @@
+//例如，假设我们只有5张卡：S3，H5，C1，D13 J2。
+//给定一个改组顺序{4，2，5，3，1}，结果将是：
+//J2，H5，D13，S3，C1。如果我们要再次重复洗牌，
+//C1，H5，S3， J2，D13。
+//思路
+//洗两次牌
+//1->4->3;
+//2->2->2;
+//3->5->1;
+//4->3->5;
+//5->1->4;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            int[] a = new int[54];//初始牌
+            int[] b = new int[54];//指定位置
+            int N = int.Parse(Console.ReadLine());//洗牌次数
+            b = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();//要洗的位置
+            for (int i = 1; i <= a.Length; i++)
+            {
+                a[i - 1] = i;
+            }
+            ShufflingMachine(a, b, N);
+        }
+        public static void ShufflingMachine(int[] a,int[] b,int times)
+        {
+            int[] c = new int[54];
+            for (int i = 0; i < times; i++)
+            {
+                for (int j = 0; j < b.Length; j++)
+                {
+                    c[b[j]-1] = a[j];
+                }
+                a = (int[])c.Clone();
+            }
+            Console.WriteLine(String.Join(" ", a.Select(x => Shuffling(x))));
+        }
+        public static string Shuffling(int value)
+        {
+            if (value == 53) return "J1";
+            if (value == 54) return "J2";
+            string[] str = new string[4] { "S", "H", "C", "D" };
+            int chu = (value - 1) / 13;
+            int yu = (value - 1) % 13 + 1;
+            return str[chu] + yu;
+        }
+    }
+}

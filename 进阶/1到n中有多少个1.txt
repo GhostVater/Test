@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct IntTotal
+    {
+        public int value;
+        public int count;
+        public int total;
+
+        public IntTotal(int value, int count, int total)
+        {
+            this.value = value;
+            this.count = count;
+            this.total = total;
+        }
+    }
+
+    class Program
+    {
+        public static int N, M;
+        public static void Main(string[] args)
+        {
+            N = int.Parse(Console.ReadLine());
+            int res = 0;
+            int b = 1;
+            while (N >= b)
+            {
+                int left = N / b;
+                int right = N % b;
+                if (left % 10 > 1) res += (left / 10 + 1) * b;
+                else if (left % 10 == 1) res += (left / 10) * b + (right + 1);
+                else res += (left / 10) * b;
+                b *= 10;
+            }
+            Console.WriteLine(res);
+        }
+    }
+}
+
+//例如算12345：
+//个位1：1234*1+1（个位>=1加1）
+//十位1：123*10+10
+//百位1：12*100+100
+//千位1：1*1000+1000
+//万位1：2345+1
+//1的总个数为：8121
+
+//例如算23012：
+//个位1：2301*1+1
+//十位1：230*10+2+1  （十位=1加低位即2然后加1）
+//百位1：23*100            （百位为0加0）
+//千位1：2*1000+1000
+//万位1：10000
+//1的总个数为：19905

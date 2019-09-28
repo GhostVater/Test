@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, SupplyChain> supplyChainDict = new Dictionary<int, SupplyChain>();
+        public static void Main(string[] args)
+        {
+            string[] str1 = Console.ReadLine().Split(' ');
+            int N = int.Parse(str1[0]);
+            SupplyChain.reservePrice = float.Parse(str1[1]);
+            SupplyChain.rate = float.Parse(str1[2]) / 100;
+
+            for (int i = 0; i < N; i++)
+            {
+                string[] str2 = Console.ReadLine().Split(' ');
+                int count = int.Parse(str2[0]);
+                SupplyChain supplyChain = new SupplyChain(i);
+                if (count == 0)//如果是零售商(没有下家)
+                {
+                    supplyChain.count = int.Parse(str2[1]);//添加货品总数
+                }
+                else//分销商(至少有一个下家)
+                {
+                    for (int j = 1; j <= count; j++)
+                    {
+                        supplyChain.AddSupplys(int.Parse(str2[j]));//添加下家
+                    }
+                }
+                supplyChainDict.Add(i, supplyChain);
+            }
+
+            supplyChainDict[0].Link(new HashSet<int>());
+
+           // Console.WriteLine(Math.Round(SupplyChain.totalSales, 1, MidpointRounding.AwayFromZero));//四舍五入精确到小数点后的1位
+            Console.WriteLine(SupplyChain.totalSales.ToString("f1"));//4舍6入5取偶
+        }
+    }
+
+    class SupplyChain
+    {
+        public int id;//商家id
+        public int count;//货物数量
+        public List<int> supplys = new List<int>();//分销商的下家
+
+        public static double totalSales; //总销售额
+        public static float reservePrice;//底价
+        public static float rate;//利率
+
+        public SupplyChain(int id)
+        {
+            this.id = id;
+        }
+
+        /// <summary>
+        /// 添加下家
+        /// </summary>
+        /// <param name="id">下家id</param>
+        public void AddSupplys(int id)
+        {
+            if (!supplys.Contains(id))
+            {
+                supplys.Add(id);
+            }
+        }
+
+        public void Link(HashSet<int> h)
+        {
+            if (supplys.Count == 0)//已经到达分销商
+            {
+                double price = reservePrice;
+                for (int i = 0; i < h.Count; i++)
+                {
+                    price += price * rate;
+                }
+                totalSales += price * count;
+                return;
+            }
+
+            foreach (var id in supplys)
+            {
+                HashSet<int> hashSet = new HashSet<int>(h);
+                if (!hashSet.Contains(id))
+                {
+                    hashSet.Add(id);
+                    Program.supplyChainDict[id].Link(hashSet);
+                }
+            }
+        }
+    }
+}

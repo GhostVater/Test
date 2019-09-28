@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<long> primes = new List<long>();
+        public static void Main(string[] args)
+        {
+            string str = Console.ReadLine();
+            Prime(long.Parse(str));
+            primes.Sort();
+            var sour = primes.GroupBy(t => t).Select(t => new { key = t.Key, count = t.Count() }).ToArray();
+            Console.WriteLine(str + "=" + String.Join("*", sour.Select(x => x.count > 1 ? x.key + "^" + x.count : x.key.ToString())));
+        }
+        static void Prime(long value)
+        {
+            if (value == 2)
+            {
+                primes.Add(value);
+                return;
+            }
+            int p = (int)Math.Sqrt(value) + 1;
+            for (int i = 2; i <= p; i++)
+            {
+                if (value % i == 0)
+                {
+                    primes.Add(i);
+                    Prime(value / i);
+                    return;
+                }
+            }
+            //ÊÇËØÊý
+            primes.Add(value);
+        }
+    }
+}

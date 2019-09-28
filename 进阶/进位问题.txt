@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            Galleon(Console.ReadLine());
+        }
+        static void Galleon(string str)
+        {
+            int[] A = str.Split(' ', '.').Select(x => int.Parse(x)).ToArray();
+
+            int a1, b1, c1, a2, b2, c2;
+
+            a1 = A[0];
+            b1 = A[1];
+            c1 = A[2];
+            a2 = A[3];
+            b2 = A[4];
+            c2 = A[5];
+
+            int y = 0;
+
+            int c = (c1 + c2) % 29;
+            y = (c1 + c2) / 29;
+
+            int b = (b1 + b2 + y) % 17;
+            y = (b1 + b2 + y) / 17;
+
+            int a = a1 + a2 + y;
+
+            Console.WriteLine(a + "." + b + "." + c);
+        }
+    }
+}
