@@ -1,0 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M;
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().ToArray();
+            var str2 = Console.ReadLine().Trim().ToArray();
+            for (int i = 0; i < str1.Length; i++)
+            {
+                if (!str2.Contains(str1[i]))
+                {
+                    Console.Write(str1[i]);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int L = 1;//当没有回文时应该为1
+
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim();
+            int len = str.Length;
+            for (int i = 0; i < len; i++)
+            {
+                if (len - i < L) break;//如果最后总长度都没有最长长度长的话就直接跳出
+                for (int j = len - 1; j > i; j--)
+                {
+                    if (str[i] == str[j] && j - i + 1 > L)//如果长度小于的话就没有必要继续判断了
+                    {
+                        int n = i + 1, m = j - 1;
+                        while (n < m)
+                        {
+                            if (str[n] != str[m]) break;
+                            n++;
+                            m--;
+                        }
+                        if (n >= m)//成功
+                        {
+                            L = j - i + 1;
+                            break;//由于是从后往前判断所以长度是递减的,所以要求最长长度的话没有必要继续判断
+                        }
+                    }
+                }
+            }
+            Console.WriteLine(L);
+        }
+    }
+}

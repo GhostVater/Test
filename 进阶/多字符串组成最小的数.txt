@@ -1,0 +1,60 @@
+//给定数字段的集合，您应该从它们中恢复最小的数字。例如，给定{32，321，3214，0229，87}
+//我们可以针对不同的组合顺序恢复许多数字，例如32-321-3214-0229-87或0229-32-87-321-3214这些段
+//最小的数字是0229-321-3214-32-87。
+//此题自己的思路
+
+//例如      32-321-3214-0229-87
+
+//补全      3233-3213-3214-0229-8788
+
+//排序      0229-3213-3214-3233-8788
+
+//结果      0229-321-3214-32-87
+
+//合并      22932132143287 
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public struct MinNum
+    {
+        public string num;
+        public string value;
+        public MinNum(string num, string value)
+        {
+            this.num = num;
+            this.value = value;
+        }
+    }
+
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split().ToList();
+            str1.RemoveAt(0);
+            List<MinNum> minNums = new List<MinNum>();
+            int maxL = 0;
+            for (int i = 0; i < str1.Count; i++)
+            {
+                if (str1[i].Length > maxL)
+                {
+                    maxL = str1[i].Length;
+                }
+            }
+            for (int i = 0; i < str1.Count; i++)
+            {
+                minNums.Add(new MinNum(str1[i].PadRight(maxL, str1[i][0]), str1[i]));//补全为首字母即可
+            }
+            minNums = minNums.OrderBy(x => int.Parse(x.num)).ToList();//按补全后的大小排序
+            string str = String.Join("", minNums.Select(x => x.value));
+            str = str.TrimStart('0');
+            if (string.IsNullOrEmpty(str))  str = "0";
+            Console.WriteLine(str);
+        }
+    }
+}

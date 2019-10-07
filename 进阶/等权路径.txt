@@ -1,0 +1,85 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M;
+        public static Dictionary<string, Tree> treeDict = new Dictionary<string, Tree>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            N = str1[0];//节点数
+            M = str1[1];//关联数
+            Tree.S = str1[2];//需求权重
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int len = N.ToString().Length;
+            string head = 0.ToString().PadLeft(len, '0');
+            for (int i = 0; i < N; i++)
+            {
+                string id = i.ToString().PadLeft(len, '0');
+                int weight = str2[i];
+                treeDict.Add(id, new Tree(id, weight));
+            }
+            for (int i = 0; i < M; i++)
+            {
+                var str3 = Console.ReadLine().Trim().Split(' ');
+                string id = str3[0];
+                int n = int.Parse(str3[1]);
+                for (int j = 2; j < n+2; j++)
+                {
+                    treeDict[id].AddChilds(str3[j]);
+                }
+            }
+            treeDict[head].Link(new HashSet<string>() { treeDict[head].id }, treeDict[head].weight);
+            foreach (var child in Tree.path)
+            {
+                Console.WriteLine(String.Join(" ", child));
+            }
+        }
+    }
+
+    class Tree
+    {
+        public string id;
+        public int weight;
+        public HashSet<string> childs = new HashSet<string>();
+        public static int S;
+        public static List<List<int>> path = new List<List<int>>();
+        public Tree(string id, int weight)
+        {
+            this.id = id;
+            this.weight = weight;
+        }
+        public void AddChilds(string id)
+        {
+            childs.Add(id);
+        }
+        public void Link(HashSet<string> tree, int weight)
+        {
+           
+
+            if (weight == S&&this.childs.Count == 0)
+            {
+                AddPath(tree);
+                return;
+            }
+            childs = childs.OrderByDescending(x => Program.treeDict[x].weight).ToHashSet();
+            foreach (var id in childs)
+            {
+                int w = weight + Program.treeDict[id].weight;
+                if (w > S) continue;
+                HashSet<string> newTree = new HashSet<string>(tree) { id };
+                Program.treeDict[id].Link(newTree, w);
+            }
+        }
+        public static void AddPath(HashSet<string> hash)
+        {
+            List<int> ls = hash.Select(x => Program.treeDict[x].weight).ToList();
+            path.Add(ls);
+        }
+    }
+}

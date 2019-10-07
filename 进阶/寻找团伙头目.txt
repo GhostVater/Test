@@ -1,0 +1,95 @@
+//判断是否团伙条件 人数大于2 且人员间的通话时长大于K
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+
+    class Program
+    {
+        public static int N,K;
+        public static Dictionary<string, Gang> gangDict = new Dictionary<string, Gang>();
+        public static Dictionary<string, int> dict = new Dictionary<string, int>();
+
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split().Select(x => int.Parse(x)).ToArray();
+            N = str1[0];
+            K = str1[1];
+            for (int i = 0; i < N; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split();
+                string name1 = str2[0];//嫌疑人1
+                string name2 = str2[1];//嫌疑人2
+                int time = int.Parse(str2[2]);//通话时长
+                Gang gang1 = new Gang(name1, time);
+                Gang gang2 = new Gang(name2, time);
+                AddGangDict(gang1, time);
+                AddGangDict(gang2, time);
+                gangDict[name1].gangs.Add(gangDict[name2]);
+                gangDict[name2].gangs.Add(gangDict[name1]);
+            }
+            foreach (var gang in gangDict.Values)
+            {
+                if (!gang.isflag)
+                {
+                    HashSet<Gang> gangs = new HashSet<Gang>();
+                    gang.Link(gangs);
+                    if (gangs.Count < 3) continue;
+                    int totalTime = 0;
+                    foreach (var item in gangs)
+                    {
+                        totalTime += item.time;
+                    }
+                    if (totalTime / 2 < K) continue;//除以2是因为每个之间的距离都算了两次 A到B 和B到A
+                    dict.Add(gangs.OrderByDescending(x => x.time).ToHashSet().First().name, gangs.Count);
+                }
+            }
+            Console.WriteLine(dict.Count);
+            foreach (var item in dict.OrderBy(x => x.Key))
+            {
+                Console.WriteLine(item.Key + " " + item.Value);
+            }
+        }
+
+        static void AddGangDict(Gang gang,int time)
+        {
+            if (!gangDict.ContainsKey(gang.name))
+            {
+                gangDict.Add(gang.name, gang);
+            }
+            else
+            {
+                gangDict[gang.name].time += time;
+            }
+        }
+
+    }
+
+    class Gang
+    {
+        public string name;//姓名
+        public int time;//通话时长
+        public bool isflag = false;//标记
+        public HashSet<Gang> gangs = new HashSet<Gang>();//与之相关的联系人
+        public Gang(string name, int time)
+        {
+            this.name = name;
+            this.time = time;
+        }
+        public void Link(HashSet<Gang> gangs)
+        {
+            isflag = true;
+            foreach (var gang in this.gangs)
+            {
+                if (!gangs.Contains(gang))
+                {
+                    gangs.Add(gang);
+                    Program.gangDict[gang.name].Link(gangs);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+
+        public static void Main(string[] args)
+        {
+            string str = Console.ReadLine();
+            int n = str.Length;
+            int n2 = (n + 2) / 3 + (n + 2) % 3;
+            string empty = "";
+            for (int i = 0; i < n2-2; i++)
+            {
+                empty += " ";
+            }
+            int start = 0, end = n-1;
+            while ((end - start)>n2)
+            {
+                Console.WriteLine(str[start]+empty+str[end]);
+                end--;
+                start++;
+            }
+            Console.WriteLine(str.Substring(start, n2));
+        }
+    }
+}

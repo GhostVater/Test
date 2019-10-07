@@ -1,0 +1,280 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public class Time
+    {
+        public int h;
+        public int m;
+        public int s;
+        public int t;
+
+        public Time(string time)
+        {
+            string[] times = time.Split(':');
+            this.h = int.Parse(times[0]);
+            this.m = int.Parse(times[1]);
+            this.s = int.Parse(times[2]);
+            this.t = h * 3600 + m * 60 + s;
+        }
+
+        /// <summary>
+        /// 将时间转化为秒
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public static int NormalizationS(string time)
+        {
+            string[] times = time.Split(':');
+            int h = int.Parse(times[0]);
+            int m = int.Parse(times[1]);
+            int s = int.Parse(times[2]);
+            return h * 3600 + m * 60 + s;
+        }
+       
+        /// <summary>
+        /// 将秒转化为时间
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string NormalizationS(int s)
+        {
+            string hh = (s / 3600).ToString().PadLeft(2, '0');
+            string mm = ((s % 3600) / 60).ToString().PadLeft(2, '0');
+            string ss = (((s % 3600) % 60) % 60).ToString().PadLeft(2, '0');
+            return hh + ":" + mm + ":" + ss;
+        }
+        public static string NormalizationM(int m)
+        {
+            string hh = (m / 60).ToString().PadLeft(2, '0');
+            string mm = (m % 60).ToString().PadLeft(2, '0');
+            string ss = "00";
+            return hh + ":" + mm + ":" + ss;
+        }
+    }
+    class Program
+    {
+        public static int N,K,M;
+        public static List<Player> players = new List<Player>();//所有玩家
+        public static List<Player> waitPlayers = new List<Player>();//正在等待玩家
+        public static List<Table> tables = new List<Table>();
+        public static List<Table> vipTables = new List<Table>();
+        public static Dictionary<int, Table> tableDict = new Dictionary<int, Table>();
+
+        public static void Main(string[] args)
+        {
+            N = int.Parse(Console.ReadLine().Trim());//玩家数
+            for (int i = 0; i < N; i++)
+            {
+                var str1 = Console.ReadLine().Trim().Split(' ');
+                string time = str1[0];//到达时间
+                if (time == "21:00:00") continue;
+                int playTime = Math.Min(120, int.Parse(str1[1]));
+                int vip = int.Parse(str1[2]);
+                players.Add(new Player(time, playTime, vip));
+            }
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            K = str2[0];
+            M = str2[1];
+            //添加桌子
+            var str3 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).OrderBy(x => x).ToHashSet();
+            for (int i = 1; i <= K; i++)
+            {
+                Table table = new Table(i);
+                if (str3.Contains(i))
+                {
+                    vipTables.Add(table);
+                }
+                else
+                {
+                    tables.Add(table);
+                }
+                tableDict.Add(i, table);
+            }
+            players = players.OrderBy(x => x.startTime).ToList();//按入场时间排队
+            int index = 0;
+            for (int nowTime = 28800; nowTime <= 75600; nowTime+=30)//模拟时间流逝(每一轮时间经过30s)
+            {
+                if (index > players.Count - 1) break;
+                if (waitPlayers.Count == 0 && players[index].time > nowTime) continue;
+                else if (players[index].time <= nowTime)
+                {
+                    //非会员
+                    if (players[index].grade == 0)
+                    {
+                        bool isOk = false;
+                      //  tables = tables.OrderBy(x => x.endTime).ToList();
+                        foreach (var ta in tables)
+                        {
+                            if (ta.AddPlayer(players[index]))
+                            {
+                                isOk = true;  //有位置
+                                break;
+                            }
+                        }
+                        if (!isOk)
+                        {
+                           // vipTables = vipTables.OrderBy(x => x.endTime).ToList();
+
+                            foreach (var ta in vipTables)
+                            {
+                                if (ta.AddPlayer(players[index]))
+                                {
+                                    isOk = true;  //有位置
+                                    break;
+                                }
+                            }
+                        }
+                        //到了最后还没有位置则需要等待
+                        if (!isOk)
+                        {
+                            waitPlayers.Add(players[index]);
+                        }
+                    }
+                    //会员
+                    else
+                    {
+                        bool isOk = false;
+                      //  vipTables = vipTables.OrderBy(x => x.endTime).ToList();
+                        foreach (var ta in vipTables)
+                        {
+                            if (ta.AddPlayer(players[index]))
+                            {
+                                isOk = true;  //有位置
+                                break;
+                            }
+                        }
+                        if (!isOk)
+                        {
+                          //  tables = tables.OrderBy(x => x.endTime).ToList();
+
+                            foreach (var ta in tables)
+                            {
+                                if (ta.AddPlayer(players[index]))
+                                {
+                                    isOk = true;  //有位置
+                                    break;
+                                }
+                            }
+                        }
+                        //到了最后还没有位置则需要等待
+                        if (!isOk)
+                        {
+                            waitPlayers.Add(players[index]);
+                            waitPlayers = waitPlayers.OrderByDescending(x => x.grade).ThenBy(x => x.time).ToList();
+
+                        }
+                    }
+                    index++;
+                }
+                if (waitPlayers.Count != 0 && (tables[0].endTime <= nowTime || vipTables[0].endTime <= nowTime))
+                {
+                    tables = tables.OrderBy(x => x.endTime).ToList();
+                    vipTables = vipTables.OrderBy(x => x.endTime).ToList();
+                    //非会员
+                    if (waitPlayers[0].grade == 0)
+                    {
+
+                        if (tables[0].endTime<= vipTables[0].endTime)
+                        {
+                            waitPlayers[0].ChangeTime(tables[0].endTime);
+                            tables[0].AddPlayer(waitPlayers[0]);
+                            tables = tables.OrderBy(x => x.endTime).ToList();
+                        }
+                        else
+                        {
+                            waitPlayers[0].ChangeTime(vipTables[0].endTime);
+                            vipTables[0].AddPlayer(waitPlayers[0]);
+                            vipTables = vipTables.OrderBy(x => x.endTime).ToList();
+                        }
+                    }
+                    //会员
+                    else
+                    {
+                        if (tables[0].endTime < vipTables[0].endTime)//优先选择vip桌子
+                        {
+                            waitPlayers[0].ChangeTime(tables[0].endTime);
+                            tables[0].AddPlayer(waitPlayers[0]);
+                            tables = tables.OrderBy(x => x.endTime).ToList();
+                        }
+                        else
+                        {
+                            waitPlayers[0].ChangeTime(vipTables[0].endTime);
+                            vipTables[0].AddPlayer(waitPlayers[0]);
+                            vipTables = vipTables.OrderBy(x => x.endTime).ToList();
+                        }
+                    }
+                    waitPlayers.RemoveAt(0);
+                }
+            }
+
+            players = players.Where(x => x.isOk).OrderBy(x => x.num).ToList();
+            foreach (var player in players)
+            {
+                Console.WriteLine(Time.NormalizationS(player.startTime) + " " + Time.NormalizationS(player.time) + " " + player.TimeM());
+            }
+            Console.WriteLine(String.Join(" ", tableDict.Values.Select(x => x.count)));
+        }
+    }
+
+    class Player
+    {
+        public int startTime;//入场时间
+        public int playTime;//游玩时间
+        public int endTime;//退场时间
+        public int grade;//玩家等级
+        public int time;//实际入场时间
+        public bool isOk =false;
+        public int num = 0;
+
+        public Player(string time, int playTime, int grade)
+        {
+            this.startTime = Time.NormalizationS(time);
+            this.playTime = playTime;
+            this.grade = grade;
+            this.endTime = this.startTime + playTime * 60;
+            this.time = this.startTime;
+        }
+
+        public void ChangeTime(int nowTime)
+        {
+            endTime += nowTime - time;
+            time = nowTime;
+        }
+
+        public int TimeM()
+        {
+            return (time - startTime + 30) / 60;
+        }
+    }
+
+    class Table
+    {
+        public int id;
+        public int count;//服务的玩家数量
+        public int endTime = 28800;
+        public static int num = 1;
+
+        public Table(int id)
+        {
+            this.id = id;
+        }
+
+        public bool AddPlayer(Player player)
+        {
+            if (player.time >= endTime)
+            {
+                count++;
+                player.isOk = true;
+                player.num = num;
+                num++;
+                endTime = player.endTime;
+                return true;
+            }
+            return false;
+        }
+    }
+}

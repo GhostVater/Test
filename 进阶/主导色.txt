@@ -1,0 +1,46 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M,maxCount = 0;
+        public static string max = "";
+        public static Dictionary<string, int> colorDict = new Dictionary<string, int>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ');
+            N = int.Parse(str1[0]);
+            M = int.Parse(str1[1]);
+            for (int i = 0; i < N; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ');
+                for (int j = 0; j < M; j++)
+                {
+                    AddColorDict(str2[j]);
+                }
+            }
+            Console.WriteLine(max);
+        }
+
+        public static void AddColorDict(string value)
+        {
+            if (colorDict.ContainsKey(value))
+            {
+                colorDict[value]++;
+            }
+            else
+            {
+                colorDict.Add(value, 1);
+            }
+            if (colorDict[value] > maxCount)
+            {
+                maxCount = colorDict[value];
+                max = value;
+            }
+        }
+    }
+}

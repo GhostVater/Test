@@ -1,0 +1,41 @@
+//3如果要入栈的话,1,2必须先入
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M;
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int m = str1[0];
+            int n = str1[1];
+            int k = str1[2];
+
+            Stack<int> stack = new Stack<int>();
+            for (int i = 0; i < k; i++)
+            {
+                string ret = "YES";
+                var str2 = Console.ReadLine().Split(' ').Select(x => int.Parse(x)).ToArray();
+                int cn = 1;
+                stack.Clear();
+                for (int j = 0; j < n; j++)
+                {
+                    int v = str2[j];
+                    while (cn <= v && stack.Count < m) stack.Push(cn++);
+                    var tv = stack.Pop();
+                    if (tv != v)
+                    {
+                        ret = "NO";
+                            break;
+                    }
+                }
+                Console.WriteLine(ret);
+            }
+        }
+    }
+}

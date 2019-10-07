@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    public class Fill
+    {
+        public decimal price;
+        public int distance;
+
+        public Fill(decimal price, int distance)
+        {
+            this.price = price;
+            this.distance = distance;
+        }
+    }
+
+
+    class Program
+    {
+        public static int C, Dmax, Davg,N;
+        public static decimal[] davgPri;
+        public static List<Fill> fills = new List<Fill>();//加油站及其费用
+        public static Dictionary<int, Fill> fillDict = new Dictionary<int, Fill>();
+
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split().Select(x => int.Parse(x)).ToArray();
+            C = str1[0];//容量
+            Dmax = str1[1];//最大距离
+            Davg = str1[2];//平均距离
+            N = str1[3];//加油站数量
+            int maxDist = C * Davg; //最大行驶距离
+            davgPri = new decimal[Dmax + maxDist + 1];
+            for (int i = 0; i < N; i++)
+            {
+                var str2 = Console.ReadLine().Split();
+                decimal price = decimal.Parse(str2[0]);
+                int distance = int.Parse(str2[1]);
+                if (distance >= Dmax) continue;
+                Fill fill = new Fill(price,distance);
+                if (fillDict.ContainsKey(distance))
+                {
+                    if(price< fillDict[distance].price)
+                    {
+                        fillDict[distance].price = price;
+                    }
+                }
+                else
+                {
+                    fillDict.Add(distance, fill);
+                }
+            }
+            fills = fillDict.Values.ToList();
+            fills = fills.OrderBy(x => x.distance).ToList();
+            N = fills.Count;//由于同一个地点可能有多个加油站的情况,所以要保留最便宜的,所以N大小会变
+            for (int i = 0; i < Dmax; i++)
+            {
+                davgPri[i] = -1;
+            }
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = fills[i].distance; j < fills[i].distance + C * Davg && j < Dmax; j++)
+                {
+                    //保证每一米都是最便宜的
+                    if (davgPri[j] != -1 && davgPri[j] > fills[i].price)
+                    {
+                        davgPri[j] = fills[i].price;
+                    }
+                    else if (davgPri[j] == -1)
+                    {
+                        davgPri[j] = fills[i].price;
+                    }
+                }
+            }
+            decimal totalPrice = 0;
+            int s = 0;
+            for (; s < Dmax; s++)
+            {
+                if (davgPri[s] < 0) break;
+                totalPrice += davgPri[s];
+            }
+            if (s >= Dmax)
+            {
+                Console.WriteLine((totalPrice / Davg).ToString("f2"));
+            }
+            else
+            {
+                Console.WriteLine($"The maximum travel distance = {s.ToString("f2")}");
+            }
+        }
+    }
+}

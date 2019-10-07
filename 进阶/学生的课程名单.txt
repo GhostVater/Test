@@ -1,0 +1,62 @@
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, K;
+        public static Dictionary<string, Student> studentDict = new Dictionary<string, Student>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split().Select(x=>int.Parse(x)).ToArray();
+            N = str1[0];
+            K = str1[1];
+            for (int i = 0; i < K; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split();
+                int course = int.Parse(str2[0]);
+                for (int j = 2; j < str2.Length; j++)
+                {
+                    string name = str2[j];
+                    Student stu = new Student(name);
+                    stu.courses.Add(course);
+                    if (!studentDict.ContainsKey(name))
+                    {
+                        studentDict.Add(name, stu);
+                    }
+                    else
+                    {
+                        studentDict[name].courses.Add(course);
+                    }
+                }
+            }
+            var str4 = Console.ReadLine().Trim().Split();
+            foreach (var name in str4)
+            {
+                if (!studentDict.ContainsKey(name))
+                {
+                    Console.WriteLine(name + " 0");
+                }
+                else
+                {
+                    Console.WriteLine(name + " " + studentDict[name].courses.Count + " " + String.Join(" ", studentDict[name].courses.OrderBy(x => x)));
+                }
+            }
+        }
+    }
+
+    class Student
+    {
+        public string name;
+        public HashSet<int> courses = new HashSet<int>();
+
+        public Student(string name)
+        {
+            this.name = name;
+        }
+    }
+}

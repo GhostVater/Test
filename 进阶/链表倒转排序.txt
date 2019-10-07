@@ -1,0 +1,67 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M;
+        public static Dictionary<string, Node> nodeDict = new Dictionary<string, Node>();
+        public static Dictionary<string, Node> sortNodeDict = new Dictionary<string, Node>();
+
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ');
+            int n = int.Parse(str1[0]);
+            string head = str1[1];
+            for (int i = 0; i < n; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ');
+                string start = str2[0];
+                int value = int.Parse(str2[1]);
+                string end = str2[2];
+                nodeDict.Add(start, new Node(start, value, end));
+            }
+            for (string i = head; i != "-1"; i = nodeDict[i].next)
+            {
+                sortNodeDict.Add(i, nodeDict[i]);
+            }
+            List<Node> nodes = sortNodeDict.Values.OrderBy(x => x.value).ToList();
+            if (nodes.Count > 0)
+            {
+                head = nodes[0].address;
+                Console.WriteLine(nodes.Count + " " + nodes[0].address);
+                nodes[nodes.Count - 1].next = "-1";
+                if (nodes.Count > 1)
+                {
+                    for (int i = nodes.Count - 2; i >= 0; i--)
+                    {
+                        nodes[i].next = nodes[i + 1].address;
+                    }
+                }
+                Console.WriteLine(String.Join("\n", nodes.Select(x => x.address + " " + x.value + " " + x.next)));
+            }
+            else
+            {
+                Console.WriteLine("0 -1");
+            }
+           
+        }
+    }
+
+    class Node
+    {
+        public string address;
+        public int value;
+        public string next;
+
+        public Node(string address, int value, string next)
+        {
+            this.address = address;
+            this.value = value;
+            this.next = next;
+        }
+    }
+}

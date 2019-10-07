@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static HashSet<int> fibHash = new HashSet<int>();// { 1, 2, 3, 5, 8, 13, 21 }; //26¸ö×ÖÄ¸
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim();
+            int len1 = str1.Length;
+            HashSet<string> hash = new HashSet<string>();
+            InitHash();
+            for (int i = 0; i < len1; i++)
+            {
+                string str2 = "";
+                for (int j = i; j < len1; j++)
+                {
+                    str2 += str1[j];
+                    if (!hash.Contains(str2)&& fibHash.Contains(str2.Distinct().ToArray().Length))
+                    {
+                        hash.Add(str2);
+                    }
+                }
+            }
+            hash = hash.OrderBy(x => x).ToHashSet();
+            foreach (var item in hash)
+            {
+                Console.WriteLine(item);
+            }
+        }
+        static void InitHash()
+        {
+            int a = 1,b=1;
+            while (b<26)
+            {
+                fibHash.Add(b);
+                int c = a;
+                a = b;
+                b = c + b;
+            }
+        }
+
+    }
+}

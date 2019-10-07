@@ -16,50 +16,48 @@ namespace Test0001
 
             string[] ku = Console.ReadLine().Split(' ');//所有售价
             string[] sell = Console.ReadLine().Split(' ');//所有售价
-
+            decimal Profit = 0;//利润
             for (int i = 0; i < kind; i++)
             {
-                mooncakes.Add(new Mooncake(int.Parse(ku[i]),int.Parse(sell[i])));
-            }
-            mooncakes = mooncakes.Where(x => (x.Inventory != 0 && x.TotalSell != 0)).ToList();//测试出现BUG除去0后无法通过测试
-            mooncakes.Sort((x, y) => -((float)x.TotalSell / x.Inventory).CompareTo((float)y.TotalSell / y.Inventory));
-            double Profit = 0;//利润
-
-            foreach (Mooncake mooncake in mooncakes)
-            {
-                if(demand> mooncake.Inventory)
+                int inventory = int.Parse(ku[i]);
+                int price = int.Parse(sell[i]);
+                if (inventory == 0)
                 {
-                    Profit += mooncake.TotalSell;
-                    demand -= mooncake.Inventory;
+                    Profit += price;
                 }
                 else
                 {
-                    Profit += (demand * (float)mooncake.TotalSell/mooncake.Inventory);
+                    mooncakes.Add(new Mooncake(inventory, price));
+                }
+            }
+            mooncakes = mooncakes.OrderByDescending(x => x.price).ToList();
+            foreach (Mooncake mooncake in mooncakes)
+            {
+                if (demand > mooncake.inventory)
+                {
+                    Profit += mooncake.totalPrice;
+                    demand -= mooncake.inventory;
+                }
+                else
+                {
+                    Profit += (demand * ((decimal)mooncake.totalPrice / mooncake.inventory));
                     break;
                 }
             }
-            Console.WriteLine(string.Format("{0:0.00}", Profit));
+            Console.WriteLine(Profit.ToString("f2"));
             return 0;
         }
     }
-
     class Mooncake
     {
-        public int Inventory;//库存
-        public int TotalSell;//售价
-        public float Sell;//零售价
-        public Mooncake(int inventory,int totalSell)
+        public int inventory;//库存
+        public int totalPrice;//售价
+        public decimal price;//单价
+        public Mooncake(int inventory, int totalPrice)
         {
-            this.Inventory = inventory;
-            this.TotalSell = totalSell;
-            if (inventory > 0 && totalSell > 0)
-            {
-                this.Sell = totalSell*1.0f / inventory;
-            }
-            else
-            {
-                this.Sell = 0;
-            }
+            this.inventory = inventory;
+            this.totalPrice = totalPrice;
+            this.price = (decimal)totalPrice / inventory;
         }
     }
 }
