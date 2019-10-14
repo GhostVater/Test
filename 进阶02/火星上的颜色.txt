@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<string> mars = new List<string>()
+        {
+            "0","1","2","3","4","5","6","7","8","9","A","B","C"
+        };
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            Console.Write("#");
+            foreach (var value in str)
+            {
+                MarsRGB(value);
+            }
+        }
+
+        static void MarsRGB(int value)
+        {
+            string rv;
+            if (value < 13)
+            {
+                rv = mars[value].PadLeft(2, '0');
+            }
+            else
+            {
+                int cha = value / 13;
+                int yu = value % 13;
+                rv = (cha > 9 ? mars[cha] : cha.ToString()) + (yu > 9 ? mars[yu] : yu.ToString());
+            }
+            Console.Write(rv);
+        }
+    }
+}

@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, HashSet<int>> numDict = new Dictionary<int, HashSet<int>>();
+
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+            Init();
+            for (int i = 0; i < N; i++)
+            {
+                var str = Console.ReadLine().Trim().ToArray();
+                for (int j = 0; j < str.Length-1; j++)
+                {
+                    while (!Reach(str[j]-'0',str[j+1]-'0'))
+                    {
+                        if (str[j + 1]-- == '0')
+                        {
+                            str[j--]--;
+                        }
+                        for (int k = j+2; k < str.Length; k++)
+                        {
+                            str[k] = '9';
+                        }
+                        if (j < 0) j++;
+                    }
+                }
+                Console.WriteLine(str);
+            }
+        }
+     
+        /// <summary>
+        /// 判断x是否能到达y
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static bool Reach(int x,int y)
+        {
+            return numDict[x].Contains(y);
+        }
+        public static void Init()
+        {
+            numDict.Add(0, new HashSet<int>() { 0 });
+            numDict.Add(1, new HashSet<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+            numDict.Add(2, new HashSet<int>() { 0, 2, 3, 5, 6, 8, 9 });
+            numDict.Add(3, new HashSet<int>() { 3, 6, 9 });
+            numDict.Add(4, new HashSet<int>() { 0, 4, 5, 6, 7, 8, 9 });
+            numDict.Add(5, new HashSet<int>() { 0, 5, 6, 8, 9 });
+            numDict.Add(6, new HashSet<int>() { 6, 9 });
+            numDict.Add(7, new HashSet<int>() { 0, 7, 8, 9 });
+            numDict.Add(8, new HashSet<int>() { 0, 8, 9 });
+            numDict.Add(9, new HashSet<int>() { 9 });
+        }
+    }
+}

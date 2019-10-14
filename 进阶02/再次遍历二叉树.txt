@@ -1,0 +1,84 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int timer, N;
+        public static void Main(string[] args)
+        {
+            N = int.Parse(Console.ReadLine());
+            Node head = null;
+            Node nowNode = null;
+            Stack<Node> nodes = new Stack<Node>();
+            for (int i = 0; i < 2*N; i++)
+            {
+                 var str = Console.ReadLine().Trim().Split(' ').ToArray();
+                if (str.Length > 1)
+                {
+                    int value = int.Parse(str[1]);
+                    Node node = new Node(value);
+                    if (nowNode != null)
+                    {        
+                        nowNode.AddChild(node);
+                    }
+                    nodes.Push(node);
+                    nowNode = node;
+                    if (head == null)
+                    {
+                        head = node;
+                    }
+                }
+                else
+                {
+                    nowNode = nodes.Pop();
+                }
+            }
+            Retrospective(head);
+        }
+        static void Retrospective(Node root)
+        {
+            if (root == null) return;
+            if (root.left != null)
+            {
+                Retrospective(root.left);
+            }
+            if (root.right != null)
+            {
+                Retrospective(root.right);
+            }
+            timer++;
+            string str = timer == N ? root.value.ToString() : root.value + " ";
+            Console.Write(str);
+        }
+    }
+
+    class Node
+    {
+        public int value;
+        public Node left;
+        public Node right;
+
+        public Node(int value)
+        {
+            this.value = value;
+        }
+
+        public void AddChild(Node node)
+        {
+            if (left == null)
+            {
+                left = node;
+                return;
+            }
+            if (right == null)
+            {
+                right = node;
+                return;
+            }
+        }
+    }
+}

@@ -1,0 +1,99 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<char, string> wordDict = new Dictionary<char, string>()
+        {
+            {'-',"Fu"},
+            {'0',"ling"},
+            { '1',"yi"},
+            {'2',"er"},
+            {'3',"san"},
+            {'4',"si"},
+            {'5',"wu"},
+            {'6',"liu"},
+            {'7',"qi"},
+            {'8',"ba"},
+            {'9',"jiu"}
+        };
+        public static List<string> numbers = new List<string>()
+        {
+            "",
+            "Shi",
+            "Bai",
+            "Qian",
+            "Wan",
+            "Shi",
+            "Bai",
+            "Qian",
+            "Yi",
+        };
+        public static void Main(string[] args)
+        {
+            string str = Console.ReadLine().Trim();
+            Stack<string> value = new Stack<string>();
+            bool isFrist = false;
+            int len = str.Length - 1;
+            int zero = 0;
+            for (int i = len; i >= 0; i--)
+            {
+                if (str[i] == '-')
+                {
+                    value.Push("Fu");
+                    break;
+                }
+                if (!isFrist && str[i] == '0' && (len - i) == 4 && str != "100000000" && str != "-100000000")
+                {
+                    value.Push("Wan");
+                    continue;
+                }
+                if (!isFrist && str[i] == '0') continue;
+                isFrist = true;
+                zero = str[i] == '0' ? zero + 1 : 0;
+                if (zero > 1 && (len - i) != 4) continue;
+                else if (zero > 1 && (len - i) == 4)
+                {
+                    if (!(len >= 8 && str[i - 1] == '0' && str[i - 2] == '0' && str[i - 3] == '0'))
+                    {
+                        value.Push("Wan");
+                    }
+                    continue;
+                }
+                if (zero == 1)
+                {
+                    if ((len - i) == 4)
+                    {
+                        if (len >= 8 && str[i - 1] == '0' && str[i - 2] == '0' && str[i - 3] == '0')
+                        {
+                            value.Push("ling"); //ÌØÊâÇé¿ö
+                        }
+                        else
+                        {
+                            value.Push("Wan");
+                        }
+                    }
+                    else
+                    {
+                        value.Push("ling");
+                    }
+                    continue;
+                }
+                value.Push(numbers[len - i]);
+                value.Push(wordDict[str[i]]);
+            }
+            if (value.Count != 0)
+            {
+                Console.WriteLine(String.Join(" ", value.ToArray()));
+            }
+            else
+            {
+                Console.WriteLine("ling");
+            }
+        }
+    }
+}

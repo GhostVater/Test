@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<Student> students = new List<Student>();
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine().Trim());
+            for (int i = 0; i < N; i++)
+            {
+                var str = Console.ReadLine().Trim().Split(' ');
+                string name = str[0];
+                string id = str[1];
+                int grade = int.Parse(str[2]);
+                students.Add(new Student(name, id, grade));
+            }
+            var sec = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            int a = sec[0];
+            int b = sec[1];
+            students = students.Where(x => x.grade >= a && x.grade <= b).ToList();
+            if (students.Count == 0)
+            {
+                Console.WriteLine("NONE");
+                return;
+            }
+            foreach (var stu in students.OrderByDescending(x => x.grade))
+            {
+                Console.WriteLine(stu.name + " " + stu.id);
+            }
+        }
+    }
+    
+    class Student
+    {
+        public string name;
+        public string id;
+        public int grade;
+
+        public Student(string name, string id, int grade)
+        {
+            this.name = name;
+            this.id = id;
+            this.grade = grade;
+        }
+    }
+}

@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static long x, y;
+        public static void Main(string[] args)
+        {
+            Console.ReadLine();
+            var str = Console.ReadLine().Trim().Split(' ').ToArray();
+            foreach (var value in str)
+            {
+                RationalSum(value);
+            }
+            Simplification();
+        }
+
+        static void RationalSum(string value)
+        {
+            var str = value.Split('/');
+            long x0 = long.Parse(str[0]);
+            long y0 = long.Parse(str[1]);
+            if (x == 0 && y == 0)
+            {
+                x = x0;
+                y = y0;
+            }
+            else
+            {
+                x = x * y0 + x0 * y;
+                y *= y0;
+            }
+            long len = Math.Min(Math.Abs(x), Math.Abs(y));
+            for (long i = len; i >0; i--)
+            {
+                if (x % i == 0 && y % i == 0)
+                {
+                    x /= i;
+                    y /= i;
+                    break;
+                }
+            }
+        }
+
+        static void Simplification()
+        {
+            string symbol = "";
+            if (x < 0)
+            {
+                symbol = "-";
+                x = -x;
+            }
+            if (x == 0)
+            {
+                Console.WriteLine("0");
+                return;
+            }
+            //需要通分
+            if (x > y)
+            {
+                long yu = x % y;
+                long chu = x / y;
+                string value = yu == 0 ? "" : " " + yu + "/" + y;
+                Console.WriteLine(symbol + chu + value);
+            }
+            else//不需要通分直接打印结果
+            {
+                Console.WriteLine(symbol + x + "/" + y);
+            }
+        }
+    }
+}

@@ -1,0 +1,61 @@
+/*题目应该逆向考虑，因为每个人要达到自己的最优解，即尽可能的让自己优先级
+在前的地点成为最终目的地。例如
+6 5 
+4 3 5 2 1 0 
+4 1 5 0 2 3 
+3 1 5 4 0 2 
+3 1 2 4 0 5 
+5 1 2 0 4 3 
+0 3 2 4 1 5
+先考虑假如之前的四个地方都没通过，那给5投票时，每个人只需和0（家里蹲）比较。
+自然第一个人 5优先级在0前，故投一票，第二个同理，此刻投票地点优先级在前，
+则投票，在后则反对不投。最终4票过半，地点5投票成功。
+第二轮对地点4投票，此时只需和5比较优先级。规则同上，
+此刻优先级 比较 当前最优解优先级。因为出题人假设每个人是聪明的，
+即使对于第6个人，家里蹲0的优先级最高，可当投票进行到地点4他依然会给4投支持票，
+因为即使把4pass掉，5也会选中，还是轮不到家里顿0，因此聪明的人退而求其次，
+把票投给了4.
+好了，思路清楚了，这题就非常好做，贴上AC代码，抛砖引玉。*/
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, K, result;
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            N = str[0];
+            K = str[1];
+            int[,] A = new int[1000, 1000];
+            for (int i = 0; i < N; i++)
+            {
+                var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+                for (int j = 0; j < str1.Length; j++)
+                {
+                    A[i, str1[j]] = j;
+                }
+            }
+            result = 0;
+            for (int i = K; i >0; i--)
+            {
+                Voting(A, i);
+            }
+            Console.WriteLine(result == 0 ? "result" : result.ToString());
+        }
+
+        public static void Voting(int[,] a,int value)
+        {
+            int vote = 0;
+            for (int i = 0; i < N; i++)
+            {
+                if (a[i, value] < a[i, result]) vote++;
+            }
+            if (vote > N / 2) result = value;
+        }
+    }
+}
