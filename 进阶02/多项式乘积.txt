@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static decimal[] A1 = new decimal[1001];
+        public static decimal[] B1 = new decimal[1001];
+        public static decimal[] results = new decimal[2002];
+        public static void Main(string[] args)
+        {
+            
+            var str1 = Console.ReadLine().Trim().Split(' ');
+            var str2 = Console.ReadLine().Trim().Split(' ');
+            Func(str1,A1);
+            Func(str2,B1);
+            Polynomials();
+
+            string value = "";
+            int sum = 0;
+            for (int i = results.Length-1; i >=0; i--)
+            {
+                if (results[i] != 0)
+                {
+                    value += " " + i + " " + results[i].ToString("f1");          // Math.Round(results[i], 1, MidpointRounding.AwayFromZero);
+                    sum++;
+                }
+            }
+            Console.WriteLine(sum + value);
+        }
+        static void Polynomials()
+        {
+            for (int i = 0; i < A1.Length; i++)
+            {
+                if (A1[i] == 0) continue;
+                for (int j = 0; j < B1.Length; j++)
+                {
+                    if (B1[j] == 0) continue;
+                    results[i + j] += A1[i] * B1[j];
+                }
+            }
+        }
+
+        static void Func(string[] str , decimal[] A)
+        {
+            for (int i = 1; i < str.Length - 1; i += 2)
+            {
+                int index = int.Parse(str[i]);
+                decimal value = decimal.Parse(str[i + 1]);
+                A[index] = value;
+            }
+        }
+    }
+
+}

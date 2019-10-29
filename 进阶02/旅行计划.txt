@@ -1,0 +1,91 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M, S, D;
+
+        public static Dictionary<int, City> cityDict = new Dictionary<int, City>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            N = str1[0];
+            M = str1[1];
+            S = str1[2];
+            D = str1[3];
+            for (int i = 0; i < N; i++)
+            {
+                cityDict.Add(i, new City(i));
+            }
+            for (int i = 0; i < M; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+                int city1 = str2[0];
+                int city2 = str2[1];
+                int distance = str2[2];
+                int cost = str2[3];
+                CostDist costDist = new CostDist(distance, cost);
+                cityDict[city1].AddRote(cityDict[city2], costDist);
+                cityDict[city2].AddRote(cityDict[city1], costDist); 
+            }
+            cityDict[S].Link(new HashSet<City>(), new CostDist());
+            Console.WriteLine(S + " " + String.Join(" ", City.cityHash.Select(x => x.name)) + " " + City.result.distance + " " + City.result.cost);
+        }
+    }
+
+    class City
+    {
+        public int name;
+        public Dictionary<City, CostDist> cityDict = new Dictionary<City, CostDist>();
+        public static HashSet<City> cityHash = new HashSet<City>();
+        public static CostDist result = new CostDist(int.MaxValue, int.MaxValue);
+        public City(int name)
+        {
+            this.name = name;
+        }
+        public void AddRote(City city, CostDist costDist)
+        {
+            if (!cityDict.ContainsKey(city))
+            {
+                cityDict.Add(city, costDist);
+            }
+        }
+
+        public void Link(HashSet<City> cities, CostDist costDist)
+        {
+            if (name == Program.D)//µΩ¥Ô÷’µ„
+            {
+                if(costDist.distance< result.distance||(costDist.distance == result.distance && costDist.cost < result.cost))
+                {
+                    cityHash = cities;
+                    result = costDist;
+                }
+            }
+            foreach (var city in cityDict.Keys)
+            {
+                if (cities.Contains(city)) continue;
+                HashSet<City> newCitys = new HashSet<City>(cities) {city};
+                CostDist newCostDist = costDist;
+                newCostDist.cost += cityDict[city].cost;
+                newCostDist.distance += cityDict[city].distance;
+                city.Link(newCitys, newCostDist);
+            }
+        }
+    }
+
+    public struct CostDist
+    {
+        public int distance;
+        public int cost;
+
+        public CostDist(int distance, int cost)
+        {
+            this.distance = distance;
+            this.cost = cost;
+        }
+    }
+}

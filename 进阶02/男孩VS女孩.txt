@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var N = int.Parse(Console.ReadLine());
+            for (int i = 0; i < N; i++)
+            {
+                string str = Console.ReadLine();
+                new People(str);
+            }
+
+            if(People.F==null)
+                Console.WriteLine("Absent");
+            else
+                Console.WriteLine(People.F.name+" "+ People.F.id);
+            if (People.M == null)
+                Console.WriteLine("Absent");
+            else
+                Console.WriteLine(People.M.name + " " + People.M.id);
+            if (People.F == null || People.M == null)
+                Console.WriteLine("NA");
+            else
+                Console.WriteLine(People.F.score - People.M.score);
+
+        }
+    }
+
+    class People
+    {
+        public string name;
+        public string sex;
+        public string id;
+        public int score;
+
+        public static People F;
+        public static People M;
+
+        public People(string str)
+        {
+            var sour = str.Trim().Split(' ');
+            this.name = sour[0];
+            this.sex = sour[1];
+            this.id = sour[2];
+            this.score = int.Parse(sour[3]);
+            if (this.sex == "F")//Å®Éú
+            {
+                if (F == null || score > F.score)
+                {
+                    F = this;
+                }
+            }
+            else
+            {
+                if (M == null || score < M.score)
+                {
+                    M = this;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList();
+            str1.RemoveAt(0);
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList();
+            str2.RemoveAt(0);
+            var str3 = Sort(str1, str2);
+            Console.WriteLine(str3.Count % 2 == 0 ? str3[str3.Count / 2 - 1] : str3[str3.Count / 2]);
+        }
+        public static List<int> Sort(List<int> one, List<int> two)
+        {
+            int onesize = one.Count;
+            int twosize = two.Count;
+            int threesize = onesize + twosize;
+            int[] three = new int[threesize];
+            int i = 0;
+            int j = 0;
+            for (int t = 0; t < threesize; t++)
+            {
+                if (i >= onesize)
+                {   //如果第一个数组比较完了，直接把第二个数组后面的数，排序到后面
+                    three[t] = two[j++];
+                }
+                else if (j >= twosize)
+                {  //如果第二个数组比较完了，直接把第一个数组后面的数，排序到后面
+                    three[t] = one[i++];
+                }
+                else
+                {
+                    if (one[i] <= two[j])
+                    {
+                        three[t] = one[i++];
+                    }
+                    else
+                    {
+                        three[t] = two[j++];
+                    }
+                }
+            }
+            return three.ToList();
+        }
+    }
+}

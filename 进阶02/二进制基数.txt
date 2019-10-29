@@ -1,0 +1,70 @@
+//1010 Radix
+//给出2个整数，和其中一个的进制，求另一个进制radix使两数相等
+//如6(10)=110(2)，已知6 110 1 10，
+//代表第一个数字6的进制为10，求110的进制使6(10)=110(radix)
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ');
+            string N1 = str[0];
+            string N2 = str[1];
+            int choice = int.Parse(str[2]);
+            int hex = int.Parse(str[3]);
+            if (N1 == N2)
+            {
+                Console.WriteLine(hex);
+                return;
+            }
+            long n = AnyHex(choice==1?N1:N2, hex);
+            long left = 2, right = n, mid = (left + right) / 2;
+            //二分查找
+            while (left <= right)
+            {
+                long s = AnyHex(choice == 1 ? N2 : N1, mid);
+                if (s == n)
+                {
+                    Console.WriteLine(mid);
+                    return;
+                }
+                //收缩范围
+                if (s > n)
+                {
+                    right = mid-1;
+                }
+                else
+                {
+                    left = mid+1;
+                }
+                mid = (left + right) / 2;
+            }
+            Console.WriteLine("Impossible");
+        }
+        /// <summary>
+        /// hex进制的n转化为10进制
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="hex"></param>
+        /// <returns></returns>
+        static  long AnyHex(string n, long hex)
+        {
+            double sum = 0;
+            for (int i = n.Length - 1; i >= 0; i--)
+            {
+                int a = n[i] >= 'a' ? n[i] - ('a'-10) : n[i] - '0';
+                sum += a * Math.Pow(hex, (n.Length - 1 - i));
+            }
+            return (long)sum;
+        }
+
+    }
+}

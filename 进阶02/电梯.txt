@@ -1,0 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            str[0] = 0;
+            int sum = 0;
+            for (int i = 1; i < str.Length; i++)
+            {
+                int t = str[i] - str[i - 1];
+                if ( t> 0)// ÉÏÂ¥
+                {
+                    sum += t * 6;
+                }
+                else//ÏÂÂ¥
+                {
+                    sum += (-t) * 4;
+                }
+                sum += 5;
+            }
+            Console.WriteLine(sum);
+        }
+    }
+}

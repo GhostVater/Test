@@ -1,0 +1,25 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static string[] res = new string[] { "W", "T", "L" };
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => float.Parse(x)).ToList();
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => float.Parse(x)).ToList();
+            var str3 = Console.ReadLine().Trim().Split(' ').Select(x => float.Parse(x)).ToList();
+            float max1 = str1.Max();
+            float max2 = str2.Max();
+            float max3 = str3.Max();
+            float result = (max1 * max2 * max3 * 0.65f - 1) * 2;
+            Console.WriteLine(res[str1.IndexOf(max1)] + " " + res[str2.IndexOf(max2)] + " " + res[str3.IndexOf(max3)] + " " + result.ToString("f2"));
+        }
+    }
+}

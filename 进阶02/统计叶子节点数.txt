@@ -1,0 +1,85 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<string, Node> nodeDict = new Dictionary<string, Node>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            int N = str1[0];
+            int M = str1[1];
+            for (int i = 1; i <= N; i++)
+            {
+                string id = i.ToString().PadLeft(2, '0');
+                nodeDict.Add(id, new Node(id));
+            }
+            for (int i = 0; i < M; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ');
+                Node parent = nodeDict[str2[0]];
+                int count = int.Parse(str2[1]);
+                for (int j = 2; j < count+2; j++)
+                {
+                    Node child = nodeDict[str2[j].PadLeft(2,'0')];
+                    parent.AddNodes(child);
+                }
+            }
+            nodeDict["01"].Link();
+            Console.WriteLine(String.Join(" ",Node.leaves));
+        }
+    }
+
+    class Node
+    {
+        public string id;
+        public HashSet<Node> nodes = new HashSet<Node>();
+        public int leaf;
+        public static List<int> leaves = new List<int>() { 0 };
+
+        public Node(string id)
+        {
+            this.id = id;
+        }
+        public void AddNodes(Node node)
+        {
+            if (!nodes.Contains(node))
+            {
+                nodes.Add(node);
+            }
+        }
+        public void IsLeaf()
+        {
+            this.leaf = nodes.Count == 0 ? 1 : 0;
+        }
+        public void Link()
+        {
+            int count = 0;
+            Queue<Node> queue = new Queue<Node>();
+            queue.Enqueue(this);//当前元素入队
+            queue.Enqueue(null);//插入一个空值标记位来记录当前层
+            while (queue.Any())//如果队中有元素
+            {
+                var item = queue.Dequeue();//移除并返回在 Queue 的开头的对象。
+                if (item == null)//如果是标记位
+                {
+                    if (!queue.Any()) break;//并且不是最后一位
+                    leaves.Add(count);
+                    count = 0;
+                    queue.Enqueue(null);//并且添加新的标志位
+                    continue;
+                }
+                foreach (var child in item.nodes)//遍历每一个孩子
+                {
+                    child.IsLeaf();
+                    count += child.leaf;
+                    queue.Enqueue(child);
+                }
+            }
+        }
+    }
+}

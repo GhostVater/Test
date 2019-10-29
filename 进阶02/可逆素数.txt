@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M, K, Q;
+
+        public static void Main(string[] args)
+        {
+            int N = 0, D = 10;
+            while (true)
+            {
+                var str = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+                N = str[0];
+                if (N < 0) break;
+                D = str[1];
+                if (!IsPrime(N))
+                {
+                    Console.WriteLine("No");
+                }
+                else
+                {
+                    string nx = HexNum(N, D);
+                    var c = nx.ToArray().Reverse().ToArray();
+                    nx = new string(c);
+                    int ND = AnyHex(nx, D);
+                    if (!IsPrime(ND))
+                    {
+                        Console.WriteLine("No");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Yes");
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 判断是否为素数
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
+        static bool IsPrime(int a)
+        {
+            var len = (int)Math.Sqrt(a) + 1;
+            if (a <= 1) return false;
+            if (a == 2) return true;
+            for (int i = 2; i < len; i++)
+            {
+                if (a % i == 0) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// d进制的n转化为10进制
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="d"></param>
+        /// <returns></returns>
+        static int AnyHex(string n, int d)
+        {
+            double sum = 0;
+            int len = n.Length - 1;
+            for (int i = len; i >= 0; i--)
+            {         
+                int a = n[i] >= 'a' ? n[i] - 'a'+10 : n[i] - '0';
+                sum += a * Math.Pow(d, len - i);
+            }
+            return Convert.ToInt32(sum);
+        }
+        /// <summary>
+        /// 10十进制转hex进制
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="d"></param>
+        /// <returns></returns>
+        static string HexNum(int n, int d)
+        {
+            string str = "";
+            while (n > 0)
+            {
+                str = n % d + str;
+                n /= d;
+            }
+            return str;
+        }
+    }
+}

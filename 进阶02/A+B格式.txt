@@ -1,0 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var s = Console.ReadLine().Trim().Split();
+            int a = int.Parse(s[0]);
+            int b = int.Parse(s[1]);
+            int c = a + b;
+            string str = c.ToString();
+            string result = "";
+            int len = str.Length - 1;
+            int index = 1;
+            for (int i = len; i >=0; i--,index++)
+            {
+                if (index % 3 == 0 && (c < 0 && i != 1 && i != 0 || c > 0 && i != 0))
+                {
+                    result = "," + str[i] + result;
+                }
+                else
+                {
+                    result = str[i] + result;
+                }
+            }
+            Console.WriteLine(result);
+           // Console.WriteLine("{0:N0}", c);
+        }
+    }
+}

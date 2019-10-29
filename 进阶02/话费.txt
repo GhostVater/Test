@@ -1,0 +1,174 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N;
+        public static Dictionary<string, People> peopleDict = new Dictionary<string, People>();
+        public static int[] str1 = new int[24];
+        public static void Main(string[] args)
+        {
+            //长度24    0 - 23
+            str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            N = int.Parse(Console.ReadLine());
+            for (int i = 0; i < N; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ');
+                string id = str2[0];
+                string time = str2[1];
+                string state = str2[2];
+                if (peopleDict.ContainsKey(id))
+                {
+                    peopleDict[id].AddStates(time, state);
+                }
+                else
+                {
+                    peopleDict.Add(id, new People(id, time, state));
+                }
+            }
+            
+            foreach (var p in peopleDict.Values)
+            {
+                p.SortStates();
+            }
+            var sour = peopleDict.Values.OrderBy(x => x.id).Where(x => x.states.Count > 0).ToList();
+
+            foreach (var p in sour)
+            {
+               Console.WriteLine(p.id + " "+ p.month);
+                int count = p.states.Count;
+                int sum = 0;
+                for (int i = 0; i < count; i+=2)
+                {
+                    string time1 = p.states[i].time;
+                    Console.Write(time1.Substring(3) + " ");
+                    string time2 = p.states[i+1].time;
+                    Console.Write(time2.Substring(3) + " ");
+                    int price = Time(time2) - Time(time1);
+                    Console.Write(price+" ");
+                    int value = Price(time1, time2);
+                    Console.WriteLine("$" + (value/100f).ToString("f2"));
+                    sum += value;
+                }
+                Console.WriteLine($"Total amount: ${(sum / 100f).ToString("f2")}");
+            }
+        }
+        public static int Price(string time1, string time2)
+        {
+            var a1 = time1.Split(':');
+            int d1 = int.Parse(a1[1]);
+            int h1 = int.Parse(a1[2]);
+            int m1 = int.Parse(a1[3]);
+
+            var a2 = time2.Split(':');
+            int d2 = int.Parse(a2[1]);
+            int h2 = int.Parse(a2[2]);
+            int m2 = int.Parse(a2[3]);
+            int price = 0;
+            while (d2 > d1 || (d2 == d1 && h2 > h1) || (d2 == d1 && h2 == h1 && m2 > m1))
+            {
+                price += str1[h1];
+                m1++;
+                if (m1 == 60)
+                {
+                    m1 = 0;
+                    h1++;
+                }
+                if (h1 == 24)
+                {
+                    h1 = 0;
+                    d1++;
+                }
+            }
+            return price;
+        }
+
+        public static int Time(string time)
+        {
+            var a = time.Split(':');
+            int d = int.Parse(a[1]);
+            int h = int.Parse(a[2]);
+            int m = int.Parse(a[3]);
+            return d * 24 * 60 + h * 60 + m;
+        }
+
+    }
+    class People
+    {
+        public string id;
+        public string month;
+
+        public List<State> states = new List<State>();
+
+        public People(string id, string time, string state)
+        {
+            this.id = id;
+            this.month = time.Split(':').ToArray()[0];
+            AddStates(time, state);
+        }
+
+        public void AddStates(string time, string state)
+        {
+            states.Add(new State(time, state));
+        }
+
+        public void SortStates()
+        {
+            states = states.OrderBy(x => x.time).ToList();
+            var copy = new List<State>();
+            bool flag = true;
+            int i = 0;
+            int len = states.Count-1;
+            //去掉头不合法数据
+            while (i < states.Count)
+            {
+                if (states[i].isOn) break;
+                i++;
+            }
+            //去掉尾不合法数据
+            while (len >=0)
+            {
+                if (!states[len].isOn) break;
+                len--;
+            }
+            //flag 为匹配条件 true false 匹配  true1 true2 false1 false2 则 true2和 false1 进行匹配
+            for (; i <= len; i++)
+            {
+                if (states[i].isOn == flag)//如果达到条件
+                {
+                    if (flag)//条件为true 则选择最后一个true
+                    {
+                        int j = i+1; //从下一个开始匹配
+                        while (j<len && states[j].isOn) j++;
+                        i = j-1; //重新得到i的索引
+                        copy.Add(states[i]);
+                    }
+                    else//条件为false 则选择第一个false
+                    {
+                        copy.Add(states[i]);
+                    }
+                    flag = !flag;
+                }
+            }
+            states = copy;
+        }
+    }
+
+    struct State
+    {
+        public string time;
+        public bool isOn;
+
+        public State(string time, string isOn)
+        {
+            this.time = time;
+            this.isOn = isOn[1] == 'n';
+        }
+    }
+}

@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, K, cdex = 0;//顾客索引
+        public static List<People> serviceWindows = new List<People>();
+        public static List<People> peopleList = new List<People>();//所有要来的人
+        public static Queue<People> peopleQueue = new Queue<People>();//开始排队
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            N = str1[0]; K = str1[1];
+            for (int i = 0; i < K; i++)
+            {
+                serviceWindows.Add(null); //添加窗口
+            }
+            for (int i = 0; i < N; i++)
+            {
+                var str2 = Console.ReadLine().Trim().Split(' ');
+                int time = Time(str2[0]);
+                int durTime = int.Parse(str2[1]);//持续时间(分钟)
+                if (time > 61200) continue;//关门了就不需要来了
+                peopleList.Add(new People(time, durTime));
+            }
+            peopleList = peopleList.OrderBy(x => x.entryTime).ToList();
+            //模拟时间流逝
+            for (int i = 28800; i <= 61200; i++)
+            {
+                Entry(i); //人员开始进场
+                StartService(i);//开始对排队的人进行服务
+                EndService(i);//接受完服务
+            }
+            peopleList = peopleList.Where(x => x.endTime > 0).ToList();
+            double avgWaitTime = peopleList.Average(x => x.waitTime) / 60;
+            Console.WriteLine(avgWaitTime.ToString("f1"));
+
+        }
+        /// <summary>
+        /// 开始接受服务
+        /// </summary>
+        /// <param name="startTime"></param>
+        public static void StartService(int startTime)
+        {
+            if (peopleQueue.Count == 0) return;
+            int sdex = 0;
+            while (GetEmptyIndex(out sdex) && peopleQueue.Count != 0)
+            {
+                People people = peopleQueue.Dequeue();
+                people.SetTime(startTime);
+                serviceWindows[sdex] = people; //开始服务
+            }
+        }
+
+        /// <summary>
+        /// 到时间后自动离场
+        /// </summary>
+        /// <param name="endTime"></param>
+        public static void EndService(int endTime)
+        {
+            for (int i = 0; i < serviceWindows.Count; i++)
+            {
+                if (serviceWindows[i] != null&& serviceWindows[i].endTime<=endTime)
+                {
+                    serviceWindows[i] = null;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 到时间之后开始入场
+        /// </summary>
+        /// <param name="time"></param>
+        public static void Entry(int entryTime)
+        {
+            if (cdex > peopleList.Count - 1) return;
+            for (int i = cdex; i < peopleList.Count; i++)
+            {
+                if (peopleList[i].entryTime <= entryTime)      //入场时间比当前时间早 则入场
+                {
+                    peopleQueue.Enqueue(peopleList[i]);//开始去排队
+                    cdex = i + 1;
+                }
+                else break;
+            }
+        }
+       
+        /// <summary>
+        /// 得到空余位置
+        /// </summary>
+        /// <returns></returns>
+        public static bool GetEmptyIndex(out int sdex)
+        {
+            for (int i = 0; i < serviceWindows.Count; i++)
+            {
+                if (serviceWindows[i]==null)
+                {
+                    sdex = i;
+                    return true;
+                }
+            }
+            sdex = -1;
+            return false;
+        }
+
+        /// <summary>
+        /// 将时间全部转化为秒
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public static int Time(string time)
+        {
+            var str = time.Split(':').Select(x => int.Parse(x)).ToArray();
+            int h = str[0];
+            int m = str[1];
+            int s = str[2];
+            return h * 3600 + m * 60 + s;
+        }
+    }
+
+    class People
+    {
+        public int entryTime; //客户入场时间
+        public int startTime; //开始接受服务时间
+        public int endTime; //结束时间
+        public int duration; //持续时间
+        public int waitTime;//等待时间
+
+        public People(int entryTime, int duration)
+        {
+            this.entryTime = entryTime;
+            this.duration = duration * 60;
+        }
+
+        public void SetTime(int startTime)
+        {
+            this.startTime = startTime; //设置客户开始接受服务时间
+            this.waitTime = startTime - this.entryTime; //等待时间
+            this.endTime = startTime + this.duration;//接受完成服务时间
+        }
+    }
+}

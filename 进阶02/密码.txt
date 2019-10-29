@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static List<string> result = new List<string>();
+        public static int modified = 0;
+        public static void Main(string[] args)
+        {
+            var N = int.Parse(Console.ReadLine());
+            for (int i = 0; i < N; i++)
+            {
+                var str = Console.ReadLine().Trim().Split(' ').ToArray();
+                Func(str[0], str[1]);
+            }
+            if (result.Count == 0&&modified==1)
+            {
+                Console.WriteLine("There is 1 account and no account is modified");
+            }else if(result.Count == 0 && modified > 1)
+            {
+                Console.WriteLine($"There are {modified} accounts and no account is modified");
+            }
+            else
+            {
+                Console.WriteLine(result.Count);
+                foreach (var item in result)
+                {
+                    Console.WriteLine(item);
+                }
+            }
+           
+        }
+
+        public static void Func(string id, string password)
+        {
+            var A = password.ToArray();
+            var flag = false;
+            for (int i = 0; i < A.Length; i++)
+            {
+                switch (A[i])
+                {
+                    case '1':
+                        A[i] = '@';
+                        flag = true;
+                        break;
+                    case '0':
+                        A[i] = '%';
+                        flag = true;
+                        break;
+                    case 'l':
+                        A[i] = 'L';
+                        flag = true;
+                        break;
+                    case 'O':
+                        A[i] = 'o';
+                        flag = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (flag)
+            {
+                result.Add(id + " " + new string(A));
+            }
+            else
+            {
+                modified++;
+            }
+        }
+    }
+}

@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<int, City> cityDict = new Dictionary<int, City>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x=>int.Parse(x)).ToArray();
+            int N = str1[0];
+            int M = str1[1];
+            int C1 = str1[2];
+            int C2 = str1[3];
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            for (int i = 0; i < N; i++)
+            {
+                cityDict.Add(i, new City(i, str2[i]));
+            }
+            for (int i = 0; i < M; i++)
+            {
+                var str3 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+                City city1 = cityDict[str3[0]];
+                City city2 = cityDict[str3[1]];
+                int distance = str3[2];
+                city1.AddCityRote(city2, distance);
+                city2.AddCityRote(city1, distance);
+            }
+            City.C1 = cityDict[C1];
+            City.C2 = cityDict[C2];
+            foreach (var city in cityDict.Values)
+            {
+                city.SortDict();
+            }
+            City.C1.Link(new HashSet<City>(), 0, 0);
+            Console.WriteLine(City.count + " " + City.Weight);
+        }
+    }
+
+    class City
+    {
+        public int id;
+        public int weight;
+        public Dictionary<City, int> cityDict = new Dictionary<City, int>();
+        public static City C1,C2;
+        public static int Distance = int.MaxValue;
+        public static int Weight = 0;
+        public static int count = 0;
+
+        public City(int id, int weight)
+        {
+            this.id = id;
+            this.weight = weight;
+        }
+
+        public void SortDict()
+        {
+            cityDict = cityDict.OrderBy(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+        }
+
+        public void AddCityRote(City city,int distance)
+        {
+            if (!cityDict.ContainsKey(city))
+            {
+                cityDict.Add(city, distance);
+            }
+        }
+
+        public void Link(HashSet<City> cities,int distance,int weight)
+        {
+            weight += this.weight;
+
+            if (C2.id == this.id)
+            {
+                if (distance == Distance)
+                {
+                    count++;
+                    if (weight > Weight)
+                    {
+                        Weight = weight;
+                    }
+                }
+                if(distance< Distance)
+                {
+                    count = 1;
+                    Distance = distance;
+                    Weight = weight;
+                }
+                return;
+            }
+            foreach (var city in cityDict.Keys)
+            {
+                if (!cities.Contains(city)&& distance + cityDict[city]<=Distance)
+                {
+                    HashSet<City> nowCities = new HashSet<City>(cities) { city };
+                    city.Link(nowCities, distance + cityDict[city], weight);
+                }
+            }
+        }
+
+    }
+}

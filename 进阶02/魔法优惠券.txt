@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            Console.ReadLine();
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => long.Parse(x)).ToList();
+            str1.Sort();
+            Console.ReadLine();
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => long.Parse(x)).ToList();
+            str2.Sort();
+            Func(str1, str2);
+        }
+
+        public static void Func(List<long> a,List<long> b)
+        {
+            if (a.Count == 0 || b.Count == 0)
+            {
+                Console.WriteLine(0);
+                return;
+            }
+            int al = 0, ar = a.Count - 1, bl = 0, br = b.Count - 1;
+            long sum = 0;
+            while (al <= ar && bl <= br)
+            {
+                long value1 = a[al] * b[bl];
+                long value2 = a[ar] * b[br];
+                if (value1 > 0 && value1 > value2)
+                {
+                    sum += value1;
+                    al++;
+                    bl++;
+                }
+                else if (value2 > 0 && value2 >= value1)
+                {
+                    sum += value2;
+                    ar--;
+                    br--;
+                }
+                else break;
+            }
+            Console.WriteLine(sum);
+        }
+    }
+}

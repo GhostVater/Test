@@ -1,0 +1,131 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M, K, Q;
+        public static int[] customers;
+        public static int[] endTime;
+        public static List<List<int>> lineup = new List<List<int>>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+
+            N = str1[0]; M = str1[1]; K = str1[2]; Q = str1[3];
+            for (int i = 0; i < N; i++)
+            {
+                lineup.Add(new List<int>()); //添加窗口
+            }
+            customers = new int[K + 1];
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            for (int i = 1; i <= K; i++)
+            {
+                customers[i] = str2[i - 1];
+            }
+            endTime = (int[])customers.Clone();
+            //工作9小时,9*60 540分钟,超过540分钟输出'sorry'
+            int cindex = 1; //客户索引
+            for (int i = 0; i < 540; i++)//到时间后就不再接纳客户
+            {
+                if (cindex > K) break;//所有人排完队
+                //到时间后自动离队
+                Complete(i);
+                //进行排队
+                int lindex = 0;
+                while (!IsFull(out lindex))//如果人还没排满就继续排
+                {
+                    if (cindex > K) break;
+                    AddLineUp(lindex, cindex++);
+                }
+            }
+            //这里需要注意 =K 意思是最后一个人还没有排
+            if (cindex <= K) //还有人没有排上就下班了
+            {
+                for (int i = cindex; i <= K; i++)
+                {
+                    customers[i] = int.MaxValue; //他们所需的时间设为最大值
+                }
+            }
+
+            var str3 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            for (int i = 0; i < str3.Length; i++)
+            {
+                Console.WriteLine(Time(str3[i], customers[str3[i]]));
+            }
+
+        }
+        /// <summary>
+        /// 进入队列
+        /// </summary>
+        /// <param name="lindex">队列位置索引</param>
+        /// <param name="cindex">顾客位置索引</param>
+        static void AddLineUp(int lindex, int cindex)
+        {
+            if (lineup[lindex].Count == 0)
+            {
+                lineup[lindex].Add(customers[cindex]);//找到自己该排的队,站在最后面
+            }
+            else
+            {
+                int value = lineup[lindex][lineup[lindex].Count - 1];//获得最后一个顾客所需时间
+                customers[cindex] += value;//所需时间累加
+                lineup[lindex].Add(customers[cindex]);
+            }
+        }
+
+        /// <summary>
+        /// 是否排满队并且返回最短排队索引位置
+        /// </summary>
+        /// <returns></returns>
+        static bool IsFull(out int index)
+        {
+            int minL = lineup.Min(x => x.Count);
+
+            for (int i = 0; i < lineup.Count; i++)
+            {
+                if (lineup[i].Count >= M || lineup[i].Count != minL) continue;
+                index = i;
+                return false;
+            }
+            index = -1;
+            return true;
+        }
+
+        /// <summary>
+        /// 到达时间后离队
+        /// </summary>
+        /// <param name="time">时间</param>
+        static void Complete(int time)
+        {
+            for (int i = 0; i < lineup.Count; i++)
+            {
+                if (lineup[i].Count == 0) continue;
+                if (lineup[i][0] <= time)//时间到了需要离队
+                {
+                    lineup[i].RemoveAt(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 转化为时间
+        /// </summary>
+        /// <param name="cindex">客户的索引</param>
+        /// <param name="time">服务完成的时间</param>
+        /// <returns></returns>
+        static string Time(int cindex, int time)
+        {
+            if (time - endTime[cindex] >= 540) return "Sorry"; //开始服务时间需要小于17点 完成时间不限制,在17点前接受服务即可
+            //默认8点开始
+            int h = 8 + time / 60;
+            int m = time % 60;
+            return h.ToString().PadLeft(2, '0') + ":" + m.ToString().PadLeft(2, '0');
+        }
+    }
+}

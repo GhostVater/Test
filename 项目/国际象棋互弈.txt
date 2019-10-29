@@ -1,0 +1,854 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+/// <summary>
+/// 作者:代坤
+/// </summary>
+namespace Test0001
+{
+
+    class Program
+    {
+        public static int N = 100;//100回合
+        public static void Main(string[] args)
+        {
+            Checkerboard.InitDict();
+            //白棋先手
+            bool isBlack = false;
+            for (int i = 0; i < N; i++)
+            {
+                Checkerboard.GameStart(isBlack, i + 1);
+                isBlack = !isBlack;
+            }
+            Console.WriteLine(Checkerboard.GameEnd());
+        }
+    }
+
+    #region 棋子类
+    public enum PieceType
+    {
+        King, //王
+        Queen, //后
+        Rook, //车
+        Pawn, //兵
+        Bishop,//象
+        Knight //马
+    }
+
+    public class PieceMoveInfo
+    {
+        public Position toPosition; //移动到的位置
+        public Position prevPosition; //原来的位置
+        public Piece piece; //需要移动的对象
+
+        public PieceMoveInfo(Position toPosition, Position prevPosition, Piece piece)
+        {
+            this.toPosition = toPosition;
+            this.prevPosition = prevPosition;
+            this.piece = piece;
+        }
+    }
+
+    /// <summary>
+    /// 棋子基类
+    /// </summary>
+    public abstract class Piece
+    {
+        /// <summary>
+        /// 棋子当前的位置
+        /// </summary>
+        public Position position; //棋子位置
+        public PieceType pieceType; //棋子类型
+        public bool isBlack;//阵营
+        public static List<PieceMoveInfo> pieceMoveInfos = new List<PieceMoveInfo>(); //存储所有可以移动的对象以及他们可以移动的位置
+        protected Piece(Position position,bool isBlack)
+        {
+            this.position = position;
+            this.isBlack = isBlack;
+        }
+
+        /// <summary>
+        /// 选择可以走的位置,如果可以直接吃掉就返回true
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool Select();
+       
+        /// <summary>
+        /// 范围限制不得超出地图
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsRange(int value)
+        {
+            return (value >= 0 && value <= 7);
+        }
+    }
+
+    /// <summary>
+    /// 1 王(横竖斜着走,格数限制1)
+    /// </summary>
+     class King : Piece
+     {
+        public King(Position position,bool isBlack) : base(position,isBlack)
+        {
+            base.pieceType = PieceType.King;
+        }
+
+        public override bool Select()
+        {
+            // x -> (1,-1) y -> (1,-1)
+            int nowX = position.x;
+            int nowY = position.y;
+            //范围
+            List<Position> positions = new List<Position>(); //存储所有可以动的路径点
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <=1; y++)
+                {
+                    if (x == 0 && y == 0) continue; //自身位置不考虑
+                    if (!IsRange(nowX+x) || !IsRange(nowY+y)) continue;//无法超出棋盘范围
+                    Position nowPosition = new Position(nowX + x, nowY + y);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) continue;
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if(Checkerboard.piecePosDict[nowPosition] == null)
+                    {
+                        positions.Add(nowPosition);
+                        continue;
+                    }
+                }
+            }
+            //如果有可以行走的位置
+            if (positions.Count != 0)
+            {
+                Position pos = positions[new Random().Next(0, positions.Count)];//随机选一个位置
+                Piece.pieceMoveInfos.Add(new PieceMoveInfo(pos, position, this));//存储入随机列表中
+            }
+            return false;
+        }
+     }
+
+    /// <summary>
+    /// 1 后(横竖斜着走,不限格)
+    /// </summary>
+    class Queen : Piece
+    {
+        public Queen(Position position, bool isBlack) : base(position, isBlack)
+        {
+            base.pieceType = PieceType.Queen;
+        }
+
+        public override bool Select()
+        {
+            int nowX = position.x;
+            int nowY = position.y;
+            //首先判断上下左右位置
+            List<Position> positions = new List<Position>(); //存储所有可以动的路径点
+            bool isL = true;
+            bool isR = true;
+            bool isT = true;
+            bool isD = true;
+            //上下左右
+            for (int x = 1; x <= 7; x++)
+            {
+                if (isL && IsRange(nowX + x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isL = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isR && IsRange(nowX - x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isR = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isT && IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX, nowY+x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isT = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isD && IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX, nowY-x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isD = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+            }
+            isL = true; isR = true; isT = true; isD = true;
+            //左上,左下,右上,右下
+            for (int x = 1; x <= 7; x++)
+            {
+                if (isL && IsRange(nowX + x) && Piece.IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY + x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isL = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isR && IsRange(nowX + x) && Piece.IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY - x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isR = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isT && IsRange(nowX - x) && Piece.IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY + x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isT = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isD && IsRange(nowX - x) && Piece.IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY - x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isD = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+            }
+            //如果有可以行走的位置
+            if (positions.Count != 0)
+            {
+                Position pos = positions[new Random().Next(0, positions.Count)];//随机选一个位置
+                Piece.pieceMoveInfos.Add(new PieceMoveInfo(pos, position, this));//存储入随机列表中
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 2车(横竖走,不限格数)
+    /// </summary>
+    class Rook : Piece
+    {
+        public Rook(Position position, bool isBlack) : base(position, isBlack)
+        {
+            base.pieceType = PieceType.Rook;
+        }
+
+        public override bool Select()
+        {
+            int nowX = position.x;
+            int nowY = position.y;
+            //首先判断上下左右位置
+            List<Position> positions = new List<Position>(); //存储所有可以动的路径点
+            bool isL = true;
+            bool isR = true;
+            bool isT = true;
+            bool isD = true;
+            //上下左右
+            for (int x = 1; x <= 7; x++)
+            {
+                if (isL && IsRange(nowX + x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isL = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isR && IsRange(nowX - x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isR = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isT && IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX, nowY + x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isT = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isD && IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX, nowY - x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isD = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+            }
+           
+            //如果有可以行走的位置
+            if (positions.Count != 0)
+            {
+                Position pos = positions[new Random().Next(0, positions.Count)];//随机选一个位置
+                Piece.pieceMoveInfos.Add(new PieceMoveInfo(pos, position, this));//存储入随机列表中
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 8 兵(向前直走1格,朝斜前方攻击)
+    /// </summary>
+    class Pawn : Piece
+    {
+        public Pawn(Position position, bool isBlack) : base(position, isBlack)
+        {
+            base.pieceType = PieceType.Pawn;
+        }
+
+        public override bool Select()
+        {
+            int nowX = position.x;
+            int nowY = position.y;
+            // 注意 黑方 向下走， 白方向上走
+            if (isBlack)
+            {
+                //首先判断有无敌人  左下,右下
+                if (IsRange(nowX + 1) && IsRange(nowY - 1))
+                {
+                    Position nowPosition = new Position(nowX + 1, nowY - 1);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                }
+
+                if (IsRange(nowX - 1) && IsRange(nowY - 1))
+                {
+                    Position nowPosition = new Position(nowX - 1, nowY - 1);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                }
+                
+                if (IsRange(nowY - 1)) //向下走一格
+                {
+                    Piece.pieceMoveInfos.Add(new PieceMoveInfo(new Position(nowX, nowY - 1), position, this));
+                }
+            }
+            else
+            {
+                //首先判断有无敌人  左上,右上
+                if (IsRange(nowX + 1) && IsRange(nowY + 1))
+                {
+                    Position nowPosition = new Position(nowX + 1, nowY + 1);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                }
+
+                if (IsRange(nowX - 1) && IsRange(nowY + 1))
+                {
+                    Position nowPosition = new Position(nowX - 1, nowY + 1);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                }
+
+                if (IsRange(nowY + 1)) //向上走一格
+                {
+                    Piece.pieceMoveInfos.Add(new PieceMoveInfo(new Position(nowX, nowY + 1), position, this));
+                }
+
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 2象(斜着走 不限格数)
+    /// </summary>
+    class Bishop : Piece
+    {
+        public Bishop(Position position, bool isBlack) : base(position, isBlack)
+        {
+            base.pieceType = PieceType.Bishop;
+        }
+
+        public override bool Select()
+        {
+            int nowX = position.x;
+            int nowY = position.y;
+            //首先判断上下左右位置
+            List<Position> positions = new List<Position>(); //存储所有可以动的路径点
+            bool isL = true;
+            bool isR = true;
+            bool isT = true;
+            bool isD = true;
+            //左上,左下,右上,右下
+            for (int x = 1; x <= 7; x++)
+            {
+                if (isL && IsRange(nowX + x) && Piece.IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY + x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isL = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isR && IsRange(nowX + x) && Piece.IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX + x, nowY - x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isR = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isT && IsRange(nowX - x) && Piece.IsRange(nowY + x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY + x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isT = false;//禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+                if (isD && IsRange(nowX - x) && Piece.IsRange(nowY - x))
+                {
+                    Position nowPosition = new Position(nowX - x, nowY - x);
+                    //如果可以移动到的位置不为空,并且不属于敌方单位
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack == isBlack) isD = false; //右边禁止通行
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+
+            }
+            //如果有可以行走的位置
+            if (positions.Count != 0)
+            {
+                Position pos = positions[new Random().Next(0, positions.Count)];//随机选一个位置
+                Piece.pieceMoveInfos.Add(new PieceMoveInfo(pos, position, this));//存储入随机列表中
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 2马(走日)
+    /// </summary>
+    class Knight : Piece
+    {
+        public Knight(Position position, bool isBlack) : base(position, isBlack)
+        {
+            base.pieceType = PieceType.Knight;
+        }
+
+        public override bool Select()
+        {
+            //马走日
+            int nowX = position.x;
+            int nowY = position.y;
+            //首先判断上下左右位置
+            List<Position> positions = new List<Position>(); //存储所有可以动的路径点
+
+            int[] resX = new int[4] { -2, -1, 1, 2 };
+            int[] resY = new int[4] { 1, 2, 2, 1 };
+
+            for (int i = 0; i < 4; i++)
+            {
+                if(IsRange(nowX + resX[i]) && Piece.IsRange(nowY + resY[i]))
+                {
+                    Position nowPosition = new Position(nowX + resX[i], nowY + resY[i]);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+                if (IsRange(nowX + resX[i]) && Piece.IsRange(nowY - resY[i]))
+                {
+                    Position nowPosition = new Position(nowX + resX[i], nowY - resY[i]);
+                    //如果可以移动到的位置不为空,并且属于敌方单位 ,则吃掉它
+                    if (Checkerboard.piecePosDict[nowPosition] != null && Checkerboard.piecePosDict[nowPosition].isBlack != isBlack) //当前位置有子并且是地方的 则执行move方法
+                    {
+                        Checkerboard.piecePosDict[position] = null; //原来位置为空
+                        Checkerboard.piecePosDict[nowPosition] = this; //移动到当前位置
+                        position = nowPosition; //更新位置
+                        return true;
+                    }
+                    //如果可以移动到,则保存移动的位置信息
+                    if (Checkerboard.piecePosDict[nowPosition] == null) positions.Add(nowPosition);
+                }
+            }
+
+            //如果有可以行走的位置
+            if (positions.Count != 0)
+            {
+                Position pos = positions[new Random().Next(0, positions.Count)];//随机选一个位置
+                Piece.pieceMoveInfos.Add(new PieceMoveInfo(pos, position, this));//存储入随机列表中
+            }
+            return false;
+        }
+    }
+    #endregion
+
+    #region 棋盘
+
+
+
+    public struct Position
+    {
+        public int x;
+        public int y;
+
+        public Position(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+    
+    /// <summary>
+    /// 棋盘类
+    /// </summary>
+    public static class Checkerboard
+    {
+        public static Dictionary<Position, Piece> piecePosDict = new Dictionary<Position, Piece>();
+        public static Dictionary<PieceType, string> showDict = new Dictionary<PieceType, string>()
+        {
+            { PieceType.Bishop ,"B" },//象对应 B
+            { PieceType.King ,"K" },//王对应 K
+            { PieceType.Knight ,"N" },//马对应 N
+            { PieceType.Pawn ,"P" },//兵对应 P
+            { PieceType.Queen ,"Q" },//后对应 Q
+            { PieceType.Rook ,"R" } //车对应 R
+
+        };
+        public static void InitDict()
+        {
+            for (int i = 0; i <= 7; i++)
+            {
+                for (int j = 0; j <= 7; j++)
+                {
+                    piecePosDict.Add(new Position(i, j), null);
+                }
+            }
+
+            AddPiece();
+        }
+
+        public static void AddPiece()
+        {
+            //白方
+            InitPrece(new Position(0, 0), new Rook(new Position(0, 0), false));
+            InitPrece(new Position(1, 0), new Knight(new Position(1, 0), false));
+            InitPrece(new Position(2, 0), new Bishop(new Position(2, 0), false));
+            InitPrece(new Position(3, 0), new Queen(new Position(3, 0), false));
+            InitPrece(new Position(4, 0), new King(new Position(4, 0), false));
+            InitPrece(new Position(5, 0), new Bishop(new Position(5, 0), false));
+            InitPrece(new Position(6, 0), new Knight(new Position(6, 0), false));
+            InitPrece(new Position(7, 0), new Rook(new Position(7, 0), false));
+            for (int i = 0; i <= 7; i++)
+            {
+                InitPrece(new Position(i, 1), new Pawn(new Position(i, 1), false));
+            }
+
+            //黑方
+            InitPrece(new Position(0, 7), new Rook(new Position(0, 7), true));
+            InitPrece(new Position(1, 7), new Knight(new Position(1, 7), true));
+            InitPrece(new Position(2, 7), new Bishop(new Position(2, 7), true));
+            InitPrece(new Position(3, 7), new Queen(new Position(3, 7), true));
+            InitPrece(new Position(4, 7), new King(new Position(4, 7), true));
+            InitPrece(new Position(5, 7), new Bishop(new Position(5, 7), true));
+            InitPrece(new Position(6, 7), new Knight(new Position(6, 7), true));
+            InitPrece(new Position(7, 7), new Rook(new Position(7, 7), true));
+
+            for (int i = 0; i <= 7; i++)
+            {
+                InitPrece(new Position(i, 6), new Pawn(new Position(i, 6), true));
+            }
+
+
+        }
+
+        public static void InitPrece(Position position, Piece piece)
+        {
+            piecePosDict[position] = piece;
+        }
+
+        public static void GameStart(bool isBlack,int times)
+        {
+          
+            Piece.pieceMoveInfos.Clear();
+            bool isFind = false;
+            foreach (var p in piecePosDict.Values)
+            {
+                if (p == null||p.isBlack != isBlack) continue;
+                if (p.Select())
+                {
+                    isFind = true;
+                    Show(times, isBlack);
+                    return;
+                }
+            }
+            if(!isFind && Piece.pieceMoveInfos.Count != 0)
+            {
+                PieceMoveInfo pieceMoveInfo = Piece.pieceMoveInfos[new Random().Next(0, Piece.pieceMoveInfos.Count)];
+                piecePosDict[pieceMoveInfo.prevPosition] = null;
+                piecePosDict[pieceMoveInfo.toPosition] = pieceMoveInfo.piece;
+                pieceMoveInfo.piece.position = pieceMoveInfo.toPosition;
+            }
+            Show(times, isBlack);
+        }
+
+        public static int GameEnd()
+        {
+            int b = 0;
+            int w = 0;
+            foreach (var p in piecePosDict.Values)
+            {
+                if (p == null) continue;
+                if(p.isBlack == true)
+                {
+                    b++;
+                }
+                else
+                {
+                    w++;
+                }
+            }
+            if (b > w)
+            {
+                return 1;
+            }
+            else if (b == w)
+            {
+                return 0;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+
+        /// <summary>
+        /// 显示棋盘
+        /// </summary>
+        public static void Show(int times,bool isBlack)
+        {
+            Console.WriteLine();
+            Console.WriteLine("------------------------------------------------------------------");
+            Console.WriteLine($"第{times}局 " + (isBlack ? "黑方落子" : "白方落子"));
+            Console.WriteLine();
+            for (int i = 0; i <= 7; i++)
+            {
+                for (int j = 0; j <= 7; j++)
+                {
+                    Position position = new Position(j, i);
+                    if (piecePosDict[position] == null)
+                    {
+                        Console.Write("  ");
+                        continue;
+                    }
+                    string str = showDict[piecePosDict[position].pieceType];
+                    if (piecePosDict[position].isBlack)
+                    {
+                        str = str.ToUpper();//黑方大写
+                    }
+                    else
+                    {
+                        str = str.ToLower();//白方小写
+                    }
+
+                    Console.Write(str + " ");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+            Console.WriteLine("------------------------------------------------------------------");
+        }
+    }
+
+    #endregion
+}

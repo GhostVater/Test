@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            int N = int.Parse(Console.ReadLine());
+            for (int i = 0; i < N; i++)
+            {
+                new People(Console.ReadLine());
+            }
+            Console.WriteLine(People.startId + " " + People.endId);
+        }
+    }
+
+    class People
+    {
+        public static int start = int.MaxValue;
+        public static string startId;
+        public static int end = 0;
+        public static string endId;
+
+        public People(string str)
+        {
+            var value = str.Split(' ');
+            int st = Time(value[1]);
+            int et = Time(value[2]);
+            if (st < start)
+            {
+                startId = value[0];
+                start = st;
+            }
+            if (et > end)
+            {
+                endId = value[0];
+                end = et;
+            }
+        }
+
+        public static int Time(string time)
+        {
+            var t = time.Split(':').Select(x => int.Parse(x)).ToArray();
+            return t[0] * 3600 + t[1] * 60 + t[2];
+        }
+    }
+}

@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+    class Program
+    {
+        public static int N, M, K, A;
+        public static List<List<int>> result = new List<List<int>>();
+        public static int[] visit = new int[1005];
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            N = str[0];
+            M = str[1];
+            K = str[2];
+
+            for (int i = 1; i <= N+1; i++)
+            {
+                result.Add(new List<int>());
+            }
+
+            for (int i = 0; i < M; i++)
+            {
+                var str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+                int start = str1[0];
+                int end = str1[1];
+                result[start].Add(end);
+                result[end].Add(start);
+            }
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+
+            for (int i = 0; i < str2.Length; i++)
+            {
+                A  = str2[i];
+                visit = new int[1005];
+                int road = 0;
+                for (int j = 1; j <=N; j++)
+                {
+                    if(visit[j] == 0)
+                    {
+                        road++;
+                        DFS(j);
+                    }
+                }
+                Console.WriteLine((road - 2) < 0 ? 0 : (road - 2)); //包括被占领的城市 所以应该减-1 又因为 2个图可以用一条路连接所以-1 一共-2
+            }
+        }
+
+        static void DFS(int pos)
+        {
+            if (pos == A) return; //城市被占领后
+            if (visit[pos] == 1) return;//已经遍历过
+            visit[pos] = 1;//标记已遍历
+            for (int i = 0; i < result[pos].Count; i++)
+            {
+                DFS(result[pos][i]);
+            }
+        }
+    }
+}

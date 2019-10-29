@@ -1,0 +1,59 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            var str = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToArray();
+            bool isBuy = true;
+            int sum = 0;
+            int i = 0;
+            while (i< str.Length-1)
+            {
+                if (str[i] < str[i + 1]) break;
+                i++;
+            }
+            for (; i < str.Length-1; i++)
+            {
+                if (isBuy)
+                {
+                    sum -= str[i];
+                }
+                else
+                {
+                    sum += str[i];
+                }
+                i++;
+                isBuy = !isBuy;
+                if (isBuy)
+                {
+                    while (i< str.Length - 1)
+                    {
+                        if (str[i] < str[i + 1]) break;
+                        i++;
+                    }
+                    i--;
+                }
+                else
+                {
+                    while (i < str.Length - 1)
+                    {
+                        if (str[i] > str[i + 1]) break;
+                        i++;
+                    }
+                    i--;
+                }
+            }
+            Console.WriteLine(sum);
+        }
+    }
+}

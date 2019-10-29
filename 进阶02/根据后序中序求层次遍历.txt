@@ -1,0 +1,90 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+
+namespace Test0001
+{
+
+    class Program
+    {
+        public static List<int> str1 = new List<int>();
+        public static List<int> str2 = new List<int>();
+        public static void Main(string[] args)
+        {
+            Console.ReadLine();
+            str1 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList(); //后序
+            str2 = Console.ReadLine().Trim().Split(' ').Select(x => int.Parse(x)).ToList(); //中序
+            int len = str1.Count - 1;
+            Node node = InorderSequence(0, len, 0, len);
+            Fuc(node);
+
+        }
+
+        /// <summary>
+        /// 层次遍历
+        /// </summary>
+        static void Fuc(Node node)
+        {
+            Queue<Node> nodes = new Queue<Node>();
+            nodes.Enqueue(node);
+            while (nodes.Any())
+            {
+                Node nowNode = nodes.Dequeue();
+                Console.Write(nowNode.Value + " ");
+                if (nowNode.left != null)
+                    nodes.Enqueue(nowNode.left);
+                if (nowNode.right != null)
+                    nodes.Enqueue(nowNode.right);
+            }
+        }
+
+        /// <summary>
+        /// 通过中序后序得到先序遍历
+        /// </summary>
+        /// <param name="hl">后序列左指针</param>
+        /// <param name="hr">后序列右指针</param>
+        /// <param name="zl">中序列左指针</param>
+        /// <param name="zr">后序列右指针</param>
+        static Node InorderSequence(int hl, int hr,int zl,int zr)
+        {
+            if (hl > hr || zl > zr) return null; 
+            int root = str1[hr];//后序最后一个为节点
+            Node nowNode = new Node(root);
+            int rIndex = str2.IndexOf(root);//得到根的索引
+            int lc = rIndex - 1 - zl;//左孩子长度
+            if(rIndex - 1 - zl >= 0)
+            {
+                Node node1 = InorderSequence(hl, hl + lc, zl, rIndex - 1);//建立左树
+                if (node1 != null)
+                {
+                    nowNode.left = node1;
+                }
+            }
+            if (hr - 1 >= 0)
+            {
+                Node node2  =  InorderSequence(hl + lc + 1, hr - 1, rIndex + 1, zr);//建立右树
+                if (node2 != null)
+                {
+                    nowNode.right = node2;
+                }
+            }
+            return nowNode;
+        }
+    }
+
+    class Node
+    {
+        public int Value;
+        public Node left;
+        public Node right;
+
+        public Node(int value)
+        {
+            Value = value;
+        }
+    }
+}

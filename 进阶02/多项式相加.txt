@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Test0001
+{
+    class Program
+    {
+        public static Dictionary<float, float> dict = new Dictionary<float, float>();
+        public static void Main(string[] args)
+        {
+            var str1 = Console.ReadLine().Trim().Split(' ').Select(x => float.Parse(x)).ToArray();
+            for (int i = 1; i < str1.Length-1; i+=2)
+            {
+                float zhi = str1[i];
+                float value = str1[i + 1];
+                if (dict.ContainsKey(zhi))
+                {
+                    dict[zhi] += value;
+                }
+                else
+                {
+                    dict.Add(zhi, value);
+                }
+            }
+            var str2 = Console.ReadLine().Trim().Split(' ').Select(x => float.Parse(x)).ToArray();
+            for (int i = 1; i < str2.Length - 1; i += 2)
+            {
+                float zhi = str2[i];
+                float value = str2[i + 1];
+                if (dict.ContainsKey(zhi))
+                {
+                    dict[zhi] += value;
+                }
+                else
+                {
+                    dict.Add(zhi, value);
+                }
+            }
+            var sour = dict.Where(x=>x.Value!=0).OrderByDescending(x => x.Key).ToDictionary(key => key.Key, value => value.Value);
+            Console.WriteLine(sour.Count + " " + String.Join(" ", sour.Select(x => (int)x.Key + " " + x.Value.ToString("f1"))));
+        }
+    }
+}
